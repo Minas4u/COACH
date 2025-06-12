@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Running Coach Standalone Calculator</title>
+    <title>Coach - Standalone Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
     <style>
         :root {
@@ -14,68 +14,63 @@
             --md-sys-color-primary-container: #00458e;
             --md-sys-color-on-primary-container: #d6e3ff;
             --md-sys-color-secondary: #bdc7dc;
-            --md-sys-color-on-secondary: #273141;
-            
             --md-sys-color-background: #111318;
             --md-sys-color-on-background: #e2e2e6;
-            --md-sys-color-surface: #111318;
-            --md-sys-color-on-surface: #e2e2e6;
             --md-sys-color-surface-variant: #43474e;
-            --md-sys-color-on-surface-variant: #c4c6cf;
             --md-sys-color-surface-container: #1d2025;
             --md-sys-color-surface-container-high: #282b30;
-
-            --md-sys-color-outline: #8d9199;
             --md-sys-color-outline-variant: #43474e;
-            
             --md-sys-color-error: #ffb4ab;
             --md-sys-color-on-error: #690005;
-
             --md-sys-color-success: #7fdd77;
-            --md-sys-color-on-success: #003a03;
-            
             --md-sys-color-tertiary: #f06292;
         }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--md-sys-color-background);
-            color: var(--md-sys-color-on-background);
-        }
-
+        body { font-family: 'Inter', sans-serif; background-color: var(--md-sys-color-background); color: var(--md-sys-color-on-background); }
         .m3-surface-container { background-color: var(--md-sys-color-surface-container); }
         .m3-surface-container-high { background-color: var(--md-sys-color-surface-container-high); }
-        .m3-button-filled {
-            background-color: var(--md-sys-color-primary);
-            color: var(--md-sys-color-on-primary);
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
+        .m3-button-filled { background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); transition: all 0.3s; }
         .m3-button-filled:hover { box-shadow: 0 1px 3px 0 rgba(0,0,0,.3), 0 4px 8px 3px rgba(0,0,0,.15); }
         .m3-button-tonal { background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
         .m3-button-error { background-color: var(--md-sys-color-error); color: var(--md-sys-color-on-error); }
-        .m3-button-success { background-color: var(--md-sys-color-success); color: var(--md-sys-color-on-success); }
-        .m3-input {
-            background-color: var(--md-sys-color-surface-container-high);
-            border: 1px solid var(--md-sys-color-outline-variant);
-            color: var(--md-sys-color-on-surface);
+        .m3-input { background-color: var(--md-sys-color-surface-container-high); border: 1px solid var(--md-sys-color-outline-variant); color: var(--md-sys-color-on-surface); }
+        .m3-input:focus { border-color: var(--md-sys-color-primary); }
+
+        #logo { font-family: 'Teko', sans-serif; letter-spacing: 0.1em; }
+        
+        /* Sidebar Navigation */
+        .sidebar-button {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            border-radius: 999px;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface-variant);
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
         }
-        .m3-input:focus { border-color: var(--md-sys-color-primary); box-shadow: none; outline: 2px solid transparent; outline-offset: 2px; }
-        .tab-button.active { background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
+        .sidebar-button:hover {
+            background-color: var(--md-sys-color-surface-container-high);
+        }
+        .sidebar-button.active {
+            background-color: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+            font-weight: bold;
+        }
+        
+        .sub-tab-button.active { background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); }
     </style>
 </head>
 <body class="antialiased">
 
     <div class="container mx-auto p-4 md:p-6 lg:p-8">
         <header class="mb-8 text-center">
-            <h1 class="text-4xl md:text-5xl font-normal text-white">Running Coach Calculator</h1>
-            <p style="color: var(--md-sys-color-on-surface-variant);" class="mt-3 text-lg">A standalone tool for single-athlete calculations.</p>
+            <h1 id="logo" class="text-7xl font-semibold text-white">COACH</h1>
+            <p style="color: var(--md-sys-color-secondary);" class="mt-1 text-lg">Tailoring to the Finish Line</p>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
             <div class="m3-surface-container lg:col-span-1 p-6 rounded-3xl h-full flex flex-col">
                 <h2 class="text-2xl font-medium mb-5" style="color: var(--md-sys-color-on-surface-variant);">Athlete Data</h2>
-                
                 <form id="athleteForm" class="space-y-4">
                     <div>
                         <label for="athleteName" class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-primary);">Athlete Name</label>
@@ -99,24 +94,20 @@
             </div>
 
             <div id="toolsetContainer" class="m3-surface-container lg:col-span-2 p-6 rounded-3xl hidden">
-                 <div id="athleteHeader" class="flex justify-between items-start mb-6">
-                    <div>
-                        <h2 id="selectedAthleteName" class="text-3xl font-normal text-white"></h2>
-                        <p id="selectedAthleteInfo" style="color: var(--md-sys-color-on-surface-variant);"></p>
-                    </div>
-                </div>
-
-                <div class="w-full mb-6">
-                    <nav class="grid grid-cols-2 sm:flex sm:space-x-2 p-1 rounded-full m3-surface-container-high">
-                        <button id="tab-dashboard" class="tab-button flex-1 text-center py-2 px-4 rounded-full font-medium text-sm transition-colors">Dashboard</button>
-                        <button id="tab-zones" class="tab-button flex-1 text-center py-2 px-4 rounded-full font-medium text-sm transition-colors">Pace Zones</button>
-                        <button id="tab-runAI" class="tab-button flex-1 text-center py-2 px-4 rounded-full font-medium text-sm transition-colors">RunAI</button>
-                        <button id="tab-planBuilder" class="tab-button flex-1 text-center py-2 px-4 rounded-full font-medium text-sm transition-colors">Plan Builder</button>
-                        <button id="tab-weeklyAdjust" class="tab-button col-span-2 flex-1 text-center py-2 px-4 rounded-full font-medium text-sm transition-colors">Weekly Adjust</button>
-                    </nav>
+                 <div id="athleteHeader" class="text-center mb-6 border-b border-gray-700 pb-4">
+                    <h2 id="selectedAthleteName" class="text-3xl font-normal text-white"></h2>
+                    <p id="selectedAthleteInfo" style="color: var(--md-sys-color-on-surface-variant);"></p>
                 </div>
                 
-                <div id="tabContent"></div>
+                <div class="flex flex-col md:flex-row gap-8">
+                    <nav class="flex flex-row md:flex-col md:space-y-2 md:w-48 overflow-x-auto pb-2 md:pb-0">
+                        <button id="tab-dashboard" class="sidebar-button flex-shrink-0">Dashboard</button>
+                        <button id="tab-zones" class="sidebar-button flex-shrink-0">Zones</button>
+                        <button id="tab-runAI" class="sidebar-button flex-shrink-0">RunAI</button>
+                        <button id="tab-mileage" class="sidebar-button flex-shrink-0">Mileage</button>
+                    </nav>
+                    <main id="tabContent" class="flex-grow"></main>
+                </div>
             </div>
 
             <div id="welcomeMessage" class="m3-surface-container lg:col-span-2 p-10 rounded-3xl flex flex-col justify-center items-center text-center">
@@ -139,7 +130,7 @@
     </template>
     <template id="template-zones">
         <div id="content-zones">
-            <h3 class="text-xl font-medium mb-2" style="color: var(--md-sys-color-primary);">Calculated Training Pace Zones</h3>
+            <h3 class="text-xl font-medium mb-2" style="color: var(--md-sys-color-primary);">Training Pace Zones</h3>
             <p class="text-sm mb-4" style="color: var(--md-sys-color-on-surface-variant);">Based on an LT2 Pace of <span id="zoneLtPace" class="font-bold"></span>.</p>
             <div id="zonesTableContainer" class="overflow-x-auto"></div>
         </div>
@@ -157,53 +148,58 @@
             <div id="workoutSuggestionsContainer" class="mt-6 space-y-6"></div>
         </div>
     </template>
-    <template id="template-planBuilder">
-        <div id="content-planBuilder">
-            <h3 class="text-xl font-medium mb-4" style="color: var(--md-sys-color-primary);">Multi-Week Plan Builder</h3>
-            <div class="p-6 rounded-2xl space-y-6 m3-surface-container-high">
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="planWeeks" class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-on-surface-variant);">Number of Weeks</label>
-                        <input type="number" id="planWeeks" min="4" max="24" value="12" class="m3-input mt-1 block w-full rounded-lg p-3 text-base">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-on-surface-variant);">Plan Structure</label>
-                        <div class="flex items-center space-x-4 mt-2 p-1 rounded-full m3-surface-container">
-                            <label class="flex-1 text-center p-2 rounded-full cursor-pointer has-[:checked]:m3-button-tonal transition-colors">
-                                <input type="radio" name="planStructure" value="3/1" class="sr-only" checked> 3 up / 1 down
-                            </label>
-                            <label class="flex-1 text-center p-2 rounded-full cursor-pointer has-[:checked]:m3-button-tonal transition-colors">
-                                <input type="radio" name="planStructure" value="4/1" class="sr-only"> 4 up / 1 down
-                            </label>
+    <template id="template-mileage">
+        <div id="content-mileage">
+            <h3 class="text-xl font-medium mb-4" style="color: var(--md-sys-color-primary);">Mileage Planning</h3>
+            <div class="flex justify-center mb-4">
+                <div class="flex p-1 rounded-full m3-surface-container-high">
+                    <button class="sub-tab-button py-2 px-5 rounded-full active" data-subtab="plan-builder-content">Multi-Week Plan</button>
+                    <button class="sub-tab-button py-2 px-5 rounded-full" data-subtab="weekly-adjust-content">Single Week Adjust</button>
+                </div>
+            </div>
+            <div id="plan-builder-content" class="sub-tab-content">
+                <div class="p-6 rounded-2xl space-y-6 m3-surface-container-high">
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="planWeeks" class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-on-surface-variant);">Number of Weeks</label>
+                            <input type="number" id="planWeeks" min="4" max="24" value="12" class="m3-input mt-1 block w-full rounded-lg p-3 text-base">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-on-surface-variant);">Plan Structure</label>
+                            <div class="flex items-center space-x-4 mt-2 p-1 rounded-full m3-surface-container">
+                                <label class="flex-1 text-center p-2 rounded-full cursor-pointer has-[:checked]:m3-button-tonal transition-colors">
+                                    <input type="radio" name="planStructure" value="3/1" class="sr-only" checked> 3/1
+                                </label>
+                                <label class="flex-1 text-center p-2 rounded-full cursor-pointer has-[:checked]:m3-button-tonal transition-colors">
+                                    <input type="radio" name="planStructure" value="4/1" class="sr-only"> 4/1
+                                </label>
+                            </div>
                         </div>
                     </div>
+                    <button id="generatePlanBtn" class="m3-button-filled w-full font-bold py-3 px-4 rounded-full text-lg transition duration-300">Generate Plan</button>
                 </div>
-                <button id="generatePlanBtn" class="m3-button-filled w-full font-bold py-3 px-4 rounded-full text-lg transition duration-300">Generate Plan</button>
+                <div id="planResultContainer" class="mt-6"></div>
             </div>
-            <div id="planResultContainer" class="mt-6"></div>
-        </div>
-    </template>
-    <template id="template-weeklyAdjust">
-        <div id="content-weeklyAdjust">
-            <h3 class="text-xl font-medium mb-4" style="color: var(--md-sys-color-primary);">Single Week Mileage Adjustment</h3>
-            <div class="p-6 rounded-2xl space-y-4 m3-surface-container-high">
-                <div>
-                    <label for="mileageAdjust" class="block text-sm font-medium" style="color: var(--md-sys-color-on-surface-variant);">Adjust weekly mileage</label>
-                    <div class="flex items-center space-x-4 mt-2">
-                        <span class="text-lg font-mono">-20%</span>
-                        <input id="mileageAdjust" type="range" min="-20" max="15" value="0" class="w-full h-2 rounded-lg appearance-none cursor-pointer" style="background-color: var(--md-sys-color-surface-variant);">
-                        <span class="text-lg font-mono">+15%</span>
+            <div id="weekly-adjust-content" class="sub-tab-content hidden">
+                 <div class="p-6 rounded-2xl space-y-4 m3-surface-container-high">
+                    <div>
+                        <label for="mileageAdjust" class="block text-sm font-medium" style="color: var(--md-sys-color-on-surface-variant);">Adjust weekly mileage</label>
+                        <div class="flex items-center space-x-4 mt-2">
+                            <span class="text-lg font-mono">-20%</span>
+                            <input id="mileageAdjust" type="range" min="-20" max="15" value="0" class="w-full h-2 rounded-lg appearance-none cursor-pointer" style="background-color: var(--md-sys-color-surface-variant);">
+                            <span class="text-lg font-mono">+15%</span>
+                        </div>
+                        <div id="adjustmentValue" class="text-center font-bold text-3xl mt-2" style="color: var(--md-sys-color-primary);">0%</div>
                     </div>
-                    <div id="adjustmentValue" class="text-center font-bold text-3xl mt-2" style="color: var(--md-sys-color-primary);">0%</div>
-                </div>
-                <div class="text-center pt-4">
-                    <p style="color: var(--md-sys-color-on-surface-variant);">Current mileage: <span id="currentWeeklyKm"></span> km</p>
-                    <p class="text-xl font-semibold mt-1">New recommended mileage: <span id="newWeeklyKm" class="font-bold text-2xl" style="color: var(--md-sys-color-success);"></span> km</p>
+                    <div class="text-center pt-4">
+                        <p style="color: var(--md-sys-color-on-surface-variant);">Current mileage: <span id="currentWeeklyKm"></span> km</p>
+                        <p class="text-xl font-semibold mt-1">New recommended mileage: <span id="newWeeklyKm" class="font-bold text-2xl" style="color: var(--md-sys-color-success);"></span> km</p>
+                    </div>
                 </div>
             </div>
         </div>
     </template>
-
+    
     <script>
         // --- GLOBAL STATE ---
         let currentAthlete = null;
@@ -216,22 +212,17 @@
         // --- UI & RENDERING ---
         function calculateAndDisplay(athleteData) {
             currentAthlete = athleteData;
-            
             document.getElementById('toolsetContainer').classList.remove('hidden');
             document.getElementById('welcomeMessage').classList.add('hidden');
-            
             document.getElementById('selectedAthleteName').textContent = currentAthlete.name;
             document.getElementById('selectedAthleteInfo').textContent = `LT2 Pace: ${secondsToPaceString(currentAthlete.ltPaceInSeconds)}/km | Weekly Mileage: ${currentAthlete.weeklyMileage} km`;
-            
             switchTab('dashboard');
         }
 
         function switchTab(tabId) {
             if (!currentAthlete) return;
-
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.sidebar-button').forEach(btn => btn.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
-
             const tabContent = document.getElementById('tabContent');
             tabContent.innerHTML = '';
             const template = document.getElementById(`template-${tabId}`);
@@ -240,52 +231,42 @@
             if (tabId === 'dashboard') renderDashboard();
             else if (tabId === 'zones') renderPaceZones();
             else if (tabId === 'runAI') renderRunAI();
-            else if (tabId === 'planBuilder') renderPlanBuilder();
-            else if (tabId === 'weeklyAdjust') renderWeeklyAdjuster();
+            else if (tabId === 'mileage') renderMileage();
         }
         
         function renderDashboard() {
             const distribution = calculateMileageDistribution(currentAthlete.weeklyMileage);
-            document.getElementById('mileageDistributionContainer').innerHTML = `
-                <ul class="space-y-3">
-                    <li class="flex justify-between items-center text-lg p-3 rounded-xl m3-surface-container-high"><span class="font-medium">Long Run</span> <span class="font-mono">${distribution.longRun} km</span></li>
-                    <li class="flex justify-between items-center text-lg p-3 rounded-xl m3-surface-container-high"><span class="font-medium">Quality</span> <span class="font-mono">${distribution.quality} km</span></li>
-                    <li class="flex justify-between items-center text-lg p-3 rounded-xl m3-surface-container-high"><span class="font-medium">Easy/Base</span> <span class="font-mono">${distribution.easy} km</span></li>
-                </ul>`;
+            document.getElementById('mileageDistributionContainer').innerHTML = `<ul class="space-y-3">
+                <li class="flex justify-between items-center text-lg p-3 rounded-xl m3-surface-container-high"><span class="font-medium">Long Run</span> <span class="font-mono">${distribution.longRun} km</span></li>
+                <li class="flex justify-between items-center text-lg p-3 rounded-xl m3-surface-container-high"><span class="font-medium">Quality</span> <span class="font-mono">${distribution.quality} km</span></li>
+                <li class="flex justify-between items-center text-lg p-3 rounded-xl m3-surface-container-high"><span class="font-medium">Easy/Base</span> <span class="font-mono">${distribution.easy} km</span></li>
+            </ul>`;
             renderMileageChart(distribution);
         }
         
         function renderMileageChart(distribution) {
             const ctx = document.getElementById('mileageChart').getContext('2d');
             if (mileageChartInstance) mileageChartInstance.destroy();
-            mileageChartInstance = new Chart(ctx, {
-                type: 'doughnut', data: {
-                    labels: ['Long Run', 'Quality', 'Easy/Base'],
-                    datasets: [{
-                        data: [distribution.longRun, distribution.quality, distribution.easy],
-                        backgroundColor: ['#6da2ff', '#ff8a65', '#4db6ac'],
-                        borderColor: 'var(--md-sys-color-surface-container)', borderWidth: 4, hoverOffset: 8
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } } }
-            });
+            mileageChartInstance = new Chart(ctx, { type: 'doughnut', data: {
+                labels: ['Long Run', 'Quality', 'Easy/Base'],
+                datasets: [{
+                    data: [distribution.longRun, distribution.quality, distribution.easy],
+                    backgroundColor: ['#6da2ff', '#ff8a65', '#4db6ac'],
+                    borderColor: 'var(--md-sys-color-surface-container)', borderWidth: 4, hoverOffset: 8
+                }]
+            }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { display: false } } }});
         }
         
         function renderPaceZones() {
             document.getElementById('zoneLtPace').textContent = secondsToPaceString(currentAthlete.ltPaceInSeconds) + '/km';
-            const zones = calculatePaceZones(currentAthlete.ltPaceInSeconds);
-            document.getElementById('zonesTableContainer').innerHTML = `
-                <table class="min-w-full"><thead class="sr-only"><tr><th>Zone</th><th>Pace</th></tr></thead>
-                    <tbody class="space-y-3 flex flex-col">
-                    ${zones.map(z => `<tr class="flex justify-between items-center p-4 rounded-2xl" style="background-color:${z.color}1A;">
-                            <td class="flex flex-col">
-                                <span class="font-bold text-lg" style="color:${z.color};">${z.name} - ${z.intensity}</span>
-                                <span class="text-sm" style="color:var(--md-sys-color-on-surface-variant);">${z.percent}</span>
-                            </td>
-                            <td class="font-mono text-xl font-semibold text-right" style="color:var(--md-sys-color-on-surface);">${z.pace}</td>
-                        </tr>`).join('')}
-                    </tbody>
-                </table>`;
+            document.getElementById('zonesTableContainer').innerHTML = `<table class="min-w-full"><thead class="sr-only"><tr><th>Zone</th><th>Pace</th></tr></thead>
+                <tbody class="space-y-3 flex flex-col">${calculatePaceZones(currentAthlete.ltPaceInSeconds).map(z => `<tr class="flex justify-between items-center p-4 rounded-2xl" style="background-color:${z.color}1A;">
+                    <td class="flex flex-col">
+                        <span class="font-bold text-lg" style="color:${z.color};">${z.name} - ${z.intensity}</span>
+                        <span class="text-sm" style="color:var(--md-sys-color-on-surface-variant);">${z.percent}</span>
+                    </td>
+                    <td class="font-mono text-xl font-semibold text-right" style="color:var(--md-sys-color-on-surface);">${z.pace}</td>
+                </tr>`).join('')}</tbody></table>`;
         }
 
         function renderRunAI() {
@@ -293,63 +274,53 @@
             document.getElementById('runAiQualityKm').textContent = `${qualityKm} km`;
             document.getElementById('generateWorkoutsBtn').onclick = () => {
                 const suggestions = generateWorkoutSuggestions(qualityKm);
-                displayWorkoutSuggestions(suggestions);
+                const container = document.getElementById('workoutSuggestionsContainer');
+                container.innerHTML = `<div><h4 class="text-lg font-medium mb-3" style="color: var(--md-sys-color-on-primary-container);">Suggested Tempo Workouts (~${suggestions.tempoKm}km)</h4>
+                    <div class="space-y-3">${suggestions.tempo.map(w => `<div class="p-4 rounded-xl m3-surface-container-high">${w}</div>`).join('')}</div></div>
+                    <div><h4 class="text-lg font-medium mb-3" style="color: var(--md-sys-color-tertiary);">Suggested Interval Workouts (~${suggestions.intervalKm}km)</h4>
+                    <div class="space-y-3">${suggestions.intervals.map(w => `<div class="p-4 rounded-xl m3-surface-container-high">${w}</div>`).join('')}</div></div>`;
             };
         }
-
-        function displayWorkoutSuggestions(suggestions) {
-            const container = document.getElementById('workoutSuggestionsContainer');
-            container.innerHTML = `
-                <div>
-                    <h4 class="text-lg font-medium mb-3" style="color: var(--md-sys-color-on-primary-container);">Suggested Tempo Workouts (~${suggestions.tempoKm}km)</h4>
-                    <div class="space-y-3">${suggestions.tempo.map(w => `<div class="p-4 rounded-xl m3-surface-container-high">${w}</div>`).join('')}</div>
-                </div>
-                <div>
-                    <h4 class="text-lg font-medium mb-3" style="color: var(--md-sys-color-tertiary);">Suggested Interval Workouts (~${suggestions.intervalKm}km)</h4>
-                    <div class="space-y-3">${suggestions.intervals.map(w => `<div class="p-4 rounded-xl m3-surface-container-high">${w}</div>`).join('')}</div>
-                </div>`;
-        }
         
-        function renderPlanBuilder() {
+        function renderMileage() {
+            // Setup sub-tab switching
+            const subTabButtons = document.querySelectorAll('.sub-tab-button');
+            subTabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    subTabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    document.querySelectorAll('.sub-tab-content').forEach(content => content.classList.add('hidden'));
+                    document.getElementById(button.dataset.subtab).classList.remove('hidden');
+                });
+            });
+
+            // Plan builder part
             document.getElementById('generatePlanBtn').onclick = () => {
                 const totalWeeks = parseInt(document.getElementById('planWeeks').value);
                 const structure = document.querySelector('input[name="planStructure"]:checked').value;
-                displayGeneratedPlan(calculateMultiWeekPlan(currentAthlete.weeklyMileage, totalWeeks, structure));
+                const plan = calculateMultiWeekPlan(currentAthlete.weeklyMileage, totalWeeks, structure);
+                const container = document.getElementById('planResultContainer');
+                container.innerHTML = `<h4 class="text-lg font-medium my-3" style="color: var(--md-sys-color-on-primary-container);">Generated Mileage Plan</h4>
+                    <div class="overflow-auto rounded-2xl m3-surface-container-high"><table class="min-w-full"><thead><tr>
+                        <th class="p-3 text-left text-sm font-semibold" style="color:var(--md-sys-color-on-surface-variant);">Week</th>
+                        <th class="p-3 text-left text-sm font-semibold" style="color:var(--md-sys-color-on-surface-variant);">Mileage (km)</th>
+                    </tr></thead><tbody>${plan.map(week => `<tr class="border-t" style="border-color: var(--md-sys-color-outline-variant); ${week.type === 'down' ? 'background-color: #6da2ff15;' : ''}">
+                    <td class="p-3 font-medium">${week.week}</td><td class="p-3 font-semibold ${week.type === 'down' ? 'text-green-400' : ''}">${week.mileage}</td></tr>`).join('')}</tbody></table></div>`;
             };
-        }
-        
-        function displayGeneratedPlan(plan) {
-            const container = document.getElementById('planResultContainer');
-            container.innerHTML = `<h4 class="text-lg font-medium mb-3" style="color: var(--md-sys-color-on-primary-container);">Generated Mileage Plan</h4>
-                <div class="overflow-auto rounded-2xl m3-surface-container-high">
-                    <table class="min-w-full"><thead>
-                        <tr>
-                            <th class="p-3 text-left text-sm font-semibold" style="color:var(--md-sys-color-on-surface-variant);">Week</th>
-                            <th class="p-3 text-left text-sm font-semibold" style="color:var(--md-sys-color-on-surface-variant);">Mileage (km)</th>
-                        </tr></thead>
-                        <tbody>${plan.map(week => `<tr class="border-t" style="border-color: var(--md-sys-color-outline-variant); ${week.type === 'down' ? 'background-color: #6da2ff15;' : ''}">
-                                <td class="p-3 font-medium">${week.week}</td>
-                                <td class="p-3 font-semibold ${week.type === 'down' ? 'text-green-400' : ''}">${week.mileage}</td>
-                            </tr>`).join('')}</tbody>
-                    </table>
-                </div>`;
-        }
 
-        function renderWeeklyAdjuster() {
+            // Weekly adjuster part
             const initialMileage = currentAthlete.weeklyMileage;
             document.getElementById('currentWeeklyKm').textContent = initialMileage;
             const slider = document.getElementById('mileageAdjust');
             slider.value = 0;
-            updateWeeklyAdjusterUI(initialMileage, 0);
-
-            slider.oninput = e => updateWeeklyAdjusterUI(initialMileage, e.target.value);
+            const updateWeeklyUI = (base, percent) => {
+                document.getElementById('adjustmentValue').textContent = `${percent > 0 ? '+' : ''}${percent}%`;
+                document.getElementById('newWeeklyKm').textContent = Math.round(base * (1 + percent / 100));
+            };
+            updateWeeklyUI(initialMileage, 0);
+            slider.oninput = e => updateWeeklyUI(initialMileage, e.target.value);
         }
 
-        const updateWeeklyAdjusterUI = (base, percent) => {
-            document.getElementById('adjustmentValue').textContent = `${percent > 0 ? '+' : ''}${percent}%`;
-            document.getElementById('newWeeklyKm').textContent = Math.round(base * (1 + percent / 100));
-        };
-        
         // --- CALCULATIONS ---
         const calculatePaceZones = ltPace => [
             { name: 'Z1', intensity: 'Recovery', percent: '60-74%', low: 60, high: 74, color: '#6da2ff' },
@@ -373,11 +344,8 @@
                     currentMileage = Math.round((plan[plan.length-1]?.mileage || startMileage) * 0.8);
                     plan.push({ week: i, mileage: currentMileage, type: 'down' });
                 } else {
-                    if (i > 1 && plan[plan.length-1]?.type === 'down') {
-                        currentMileage = Math.round(plan[plan.length-2].mileage * 1.10);
-                    } else {
-                         currentMileage = (i === 1) ? startMileage : Math.round(currentMileage * 1.10);
-                    }
+                    if (i > 1 && plan[plan.length-1]?.type === 'down') currentMileage = Math.round(plan[plan.length-2].mileage * 1.10);
+                    else currentMileage = (i === 1) ? startMileage : Math.round(currentMileage * 1.10);
                     plan.push({ week: i, mileage: currentMileage, type: 'up' });
                 }
             }
@@ -387,31 +355,15 @@
         function generateWorkoutSuggestions(qualityKm) {
             const tempoKm = Math.round(qualityKm * 0.75);
             const intervalKm = qualityKm - tempoKm;
-            const tempoSuggestions = [];
-            const intervalSuggestions = [];
-
+            let tempoSuggestions = [], intervalSuggestions = [];
             if (tempoKm >= 3) tempoSuggestions.push(`<b>Continuous:</b> ${tempoKm}km @ Z3 pace.`);
-            if (tempoKm >= 4) {
-                const reps = Math.floor(tempoKm / 2);
-                if (reps >= 2) tempoSuggestions.push(`<b>Intervals:</b> 2 x ${reps}km @ low Z4 pace, w/ 3min jog rest.`);
-            }
-            if (tempoKm >= 6) {
-                 const reps = Math.floor(tempoKm / 3);
-                 if (reps >= 2) tempoSuggestions.push(`<b>Intervals:</b> 3 x ${reps}km @ low Z4 pace, w/ 3-4min jog rest.`);
-            }
-            if (tempoSuggestions.length === 0) tempoSuggestions.push("Not enough mileage for a standard tempo workout.");
-
-            if (intervalKm >= 1.6) {
-                intervalSuggestions.push(`<b>Short:</b> ${Math.floor(intervalKm / 0.4)} x 400m @ high Z4 pace, w/ 1:1 rest.`);
-            }
-            if (intervalKm >= 2.4) {
-                intervalSuggestions.push(`<b>Medium:</b> ${Math.floor(intervalKm / 0.8)} x 800m @ Z4 pace, w/ 2min jog rest.`);
-            }
-            if (intervalKm >= 3.0) {
-                intervalSuggestions.push(`<b>Long:</b> ${Math.floor(intervalKm / 1.0)} x 1000m @ Z4 pace, w/ 2-3min jog rest.`);
-            }
-            if (intervalSuggestions.length === 0) intervalSuggestions.push("Not enough mileage for a standard interval session.");
-
+            if (tempoKm >= 4) { const r = Math.floor(tempoKm / 2); if (r >= 2) tempoSuggestions.push(`<b>Intervals:</b> 2 x ${r}km @ low Z4, 3' rest.`); }
+            if (tempoKm >= 6) { const r = Math.floor(tempoKm / 3); if (r >= 2) tempoSuggestions.push(`<b>Intervals:</b> 3 x ${r}km @ low Z4, 3-4' rest.`); }
+            if (!tempoSuggestions.length) tempoSuggestions.push("Not enough mileage for standard tempo.");
+            if (intervalKm >= 1.6) intervalSuggestions.push(`<b>Short:</b> ${Math.floor(intervalKm / 0.4)}x400m @ high Z4, 1:1 rest.`);
+            if (intervalKm >= 2.4) intervalSuggestions.push(`<b>Medium:</b> ${Math.floor(intervalKm / 0.8)}x800m @ Z4, 2' rest.`);
+            if (intervalKm >= 3.0) intervalSuggestions.push(`<b>Long:</b> ${Math.floor(intervalKm / 1.0)}x1k @ Z4, 2-3' rest.`);
+            if (!intervalSuggestions.length) intervalSuggestions.push("Not enough mileage for standard intervals.");
             return { tempo: tempoSuggestions, intervals: intervalSuggestions, tempoKm, intervalKm };
         }
 
@@ -435,8 +387,7 @@
             currentAthlete = null;
         });
         
-        document.querySelectorAll('.tab-button').forEach(btn => btn.onclick = e => switchTab(e.target.id.split('-')[1]));
-
+        document.querySelectorAll('.sidebar-button').forEach(btn => btn.onclick = e => switchTab(e.currentTarget.id.split('-')[1]));
     </script>
 </body>
 </html>
