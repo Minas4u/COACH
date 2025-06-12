@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coach - Standalone Calculator (Google Sheets)</title>
+    <title>Coach - Standalone Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
@@ -30,20 +30,20 @@
         .m3-surface-container-high { background-color: var(--md-sys-color-surface-container-high); }
         .m3-button-filled { background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); transition: all 0.3s; }
         .m3-button-filled:hover { box-shadow: 0 1px 3px 0 rgba(0,0,0,.3), 0 4px 8px 3px rgba(0,0,0,.15); }
-        .m3-button-filled:disabled { background-color: var(--md-sys-color-surface-variant); color: #999; cursor: not-allowed; }
+        .m3-button-filled:disabled { background-color: var(--md-sys-color-surface-variant); color: #999; cursor: not-allowed; opacity: 0.5; }
         .m3-button-tonal { background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
         .m3-button-error { background-color: var(--md-sys-color-error); color: var(--md-sys-color-on-error); }
         .m3-input { background-color: var(--md-sys-color-surface-container-high); border: 1px solid var(--md-sys-color-outline-variant); color: var(--md-sys-color-on-background); }
-        .m3-input:focus { border-color: var(--md-sys-color-primary); }
+        .m3-input:focus { border-color: var(--md-sys-color-primary); outline: none; box-shadow: 0 0 0 2px var(--md-sys-color-primary); }
         #logo { font-family: 'Teko', sans-serif; letter-spacing: 0.1em; }
         .sidebar-button { display: flex; align-items: center; width: 100%; padding: 0.75rem 1.5rem; border-radius: 999px; font-weight: 500; color: var(--md-sys-color-on-surface-variant); transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out; }
         .sidebar-button:hover { background-color: var(--md-sys-color-surface-container-high); }
         .sidebar-button.active { background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); font-weight: bold; }
         .sub-tab-button.active { background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); }
+        .sub-tab-button:disabled { background-color: var(--md-sys-color-surface-variant); color: #999; cursor: not-allowed; opacity: 0.5; }
         .athlete-list-item { border: 2px solid transparent; transition: all 0.2s ease-in-out; }
         .athlete-list-item.selected { border-color: var(--md-sys-color-primary); background-color: var(--md-sys-color-primary-container); }
         .spinner { border-top-color: var(--md-sys-color-primary); }
-        /* Confirmation Modal Styles */
         #confirmationModal { transition: opacity 0.3s ease; }
     </style>
 </head>
@@ -59,8 +59,8 @@
         <div id="apiUrlContainer" class="m3-surface-container p-4 rounded-2xl mb-6 max-w-3xl mx-auto" style="display: none;">
              <label for="apiUrl" class="block text-sm font-medium mb-2 text-center" style="color: var(--md-sys-color-primary);">Google Apps Script URL</label>
              <div class="flex items-center space-x-2">
-                <input type="url" id="apiUrl" placeholder="Paste your deployed web app URL here" class="m3-input block w-full rounded-lg p-3 text-base">
-                <button id="saveApiUrlBtn" class="m3-button-filled font-bold py-3 px-5 rounded-lg transition duration-300">Set</button>
+                 <input type="url" id="apiUrl" placeholder="Paste your deployed web app URL here" class="m3-input block w-full rounded-lg p-3 text-base">
+                 <button id="saveApiUrlBtn" class="m3-button-filled font-bold py-3 px-5 rounded-lg transition duration-300">Set</button>
              </div>
              <p id="apiUrlStatus" class="text-xs text-center mt-2 text-gray-400">You must set your Apps Script URL to load and save data.</p>
         </div>
@@ -79,22 +79,32 @@
                     <div>
                         <label class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-primary);">LT2 Pace (/km)</label>
                          <div class="flex items-center space-x-2">
-                            <input type="number" id="ltPaceMin" placeholder="min" min="0" class="m3-input mt-1 block w-full rounded-lg p-3 text-base" required>
-                            <span style="color: var(--md-sys-color-on-surface-variant);">:</span>
-                            <input type="number" id="ltPaceSec" placeholder="sec" min="0" max="59" class="m3-input mt-1 block w-full rounded-lg p-3 text-base" required>
-                        </div>
+                             <input type="number" id="ltPaceMin" placeholder="min" min="0" class="m3-input mt-1 block w-full rounded-lg p-3 text-base">
+                             <span style="color: var(--md-sys-color-on-surface-variant);">:</span>
+                             <input type="number" id="ltPaceSec" placeholder="sec" min="0" max="59" class="m3-input mt-1 block w-full rounded-lg p-3 text-base">
+                         </div>
+                    </div>
+                     <!-- NEW: Marathon Pace Input -->
+                     <div>
+                        <label class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-primary);">Marathon Pace (/km)</label>
+                         <div class="flex items-center space-x-2">
+                             <input type="number" id="mpPaceMin" placeholder="min" min="0" class="m3-input mt-1 block w-full rounded-lg p-3 text-base">
+                             <span style="color: var(--md-sys-color-on-surface-variant);">:</span>
+                             <input type="number" id="mpPaceSec" placeholder="sec" min="0" max="59" class="m3-input mt-1 block w-full rounded-lg p-3 text-base">
+                         </div>
                     </div>
                     <div>
                          <label for="weeklyMileage" class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-primary);">Current Weekly Mileage (km)</label>
                         <input type="number" id="weeklyMileage" min="0" placeholder="e.g., 50" class="m3-input mt-1 block w-full rounded-lg p-3 text-base" required>
                     </div>
+                    <p id="formError" class="text-sm text-center" style="color: var(--md-sys-color-error);"></p>
                     <button type="submit" id="saveAthleteBtn" class="m3-button-filled w-full font-bold py-3 px-4 rounded-full text-lg transition duration-300 mt-2" disabled>Save Athlete</button>
                     <button type="button" id="clearFormBtn" class="m3-button-tonal w-full font-bold py-2 px-4 rounded-full text-md" disabled>New Athlete</button>
                 </form>
                 <div id="athleteListContainer" class="mt-6 flex-grow">
                      <h3 class="text-xl font-medium mb-3" style="color: var(--md-sys-color-on-surface-variant);">Saved Athletes</h3>
                      <div id="athleteList" class="space-y-2">
-                        <p id="loadingAthletes" class="text-gray-400">Set API URL to load athletes.</p>
+                         <p id="loadingAthletes" class="text-gray-400">Set API URL to load athletes.</p>
                      </div>
                 </div>
             </div>
@@ -102,23 +112,23 @@
             <!-- Right Column: Toolset / Welcome Message -->
             <div id="toolsetContainer" class="m3-surface-container lg:col-span-2 p-6 rounded-3xl hidden">
                  <div id="athleteHeader" class="text-center mb-6 border-b border-gray-700 pb-4">
-                    <h2 id="selectedAthleteName" class="text-3xl font-normal text-white"></h2>
-                    <p id="selectedAthleteInfo" style="color: var(--md-sys-color-on-surface-variant);"></p>
-                </div>
-                <div class="flex flex-col md:flex-row gap-8">
-                    <nav class="flex flex-row md:flex-col md:space-y-2 md:w-48 overflow-x-auto pb-2 md:pb-0">
-                        <button id="tab-dashboard" class="sidebar-button flex-shrink-0">Dashboard</button>
-                        <button id="tab-zones" class="sidebar-button flex-shrink-0">Zones</button>
-                        <button id="tab-runAI" class="sidebar-button flex-shrink-0">RunAI</button>
-                        <button id="tab-mileage" class="sidebar-button flex-shrink-0">Mileage</button>
-                    </nav>
-                    <main id="tabContent" class="flex-grow"></main>
-                </div>
+                     <h2 id="selectedAthleteName" class="text-3xl font-normal text-white"></h2>
+                     <p id="selectedAthleteInfo" class="text-sm" style="color: var(--md-sys-color-on-surface-variant);"></p>
+                 </div>
+                 <div class="flex flex-col md:flex-row gap-8">
+                     <nav class="flex flex-row md:flex-col md:space-y-2 md:w-48 overflow-x-auto pb-2 md:pb-0">
+                         <button id="tab-dashboard" class="sidebar-button flex-shrink-0">Dashboard</button>
+                         <button id="tab-zones" class="sidebar-button flex-shrink-0">Zones</button>
+                         <button id="tab-runAI" class="sidebar-button flex-shrink-0">RunAI</button>
+                         <button id="tab-mileage" class="sidebar-button flex-shrink-0">Mileage</button>
+                     </nav>
+                     <main id="tabContent" class="flex-grow"></main>
+                 </div>
             </div>
             <div id="welcomeMessage" class="m3-surface-container lg:col-span-2 p-10 rounded-3xl flex flex-col justify-center items-center text-center">
-                <svg class="w-20 h-20 mb-4" style="color: var(--md-sys-color-secondary);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <h2 class="text-2xl font-medium">Welcome to Coach</h2>
-                <p style="color: var(--md-sys-color-on-surface-variant);" class="mt-2">Connecting to your Google Sheet...</p>
+                 <svg class="w-20 h-20 mb-4" style="color: var(--md-sys-color-secondary);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                 <h2 class="text-2xl font-medium">Welcome to Coach</h2>
+                 <p style="color: var(--md-sys-color-on-surface-variant);" class="mt-2">Connecting to your Google Sheet...</p>
             </div>
         </div>
     </div>
@@ -147,9 +157,22 @@
     </template>
     <template id="template-zones">
         <div id="content-zones">
-            <h3 class="text-xl font-medium mb-2" style="color: var(--md-sys-color-primary);">Training Pace Zones</h3>
-            <p class="text-sm mb-4" style="color: var(--md-sys-color-on-surface-variant);">Based on an LT2 Pace of <span id="zoneLtPace" class="font-bold"></span>.</p>
-            <div id="zonesTableContainer" class="overflow-x-auto"></div>
+             <div class="flex justify-center mb-4">
+                 <div class="flex p-1 rounded-full m3-surface-container-high">
+                     <button id="zone-subtab-lt2" class="sub-tab-button py-2 px-5 rounded-full" data-subtab="zones-lt2-content">LT2 Zones</button>
+                     <button id="zone-subtab-mp" class="sub-tab-button py-2 px-5 rounded-full" data-subtab="zones-mp-content">Marathon Zones</button>
+                 </div>
+             </div>
+             <div id="zones-lt2-content" class="sub-tab-content hidden">
+                 <h3 class="text-xl font-medium mb-2 text-center" style="color: var(--md-sys-color-primary);">LT2 Pace Zones</h3>
+                 <p class="text-sm mb-4 text-center" style="color: var(--md-sys-color-on-surface-variant);">Based on an LT2 Pace of <span id="zoneLtPace" class="font-bold"></span>.</p>
+                 <div id="zonesTableContainerLT2" class="overflow-x-auto"></div>
+             </div>
+            <div id="zones-mp-content" class="sub-tab-content hidden">
+                 <h3 class="text-xl font-medium mb-2 text-center" style="color: var(--md-sys-color-primary);">Marathon Pace Zones</h3>
+                 <p class="text-sm mb-4 text-center" style="color: var(--md-sys-color-on-surface-variant);">Based on a Marathon Pace of <span id="zoneMpPace" class="font-bold"></span>.</p>
+                 <div id="zonesTableContainerMP" class="overflow-x-auto"></div>
+             </div>
         </div>
     </template>
     <template id="template-runAI">
@@ -157,9 +180,9 @@
             <h3 class="text-xl font-medium mb-4" style="color: var(--md-sys-color-primary);">RunAI Workout Generator</h3>
             <div class="p-6 rounded-2xl space-y-4 m3-surface-container-high">
                  <div class="text-center">
-                    <p style="color: var(--md-sys-color-on-surface-variant);">Total Quality Mileage for the Week</p>
-                    <p id="runAiQualityKm" class="text-4xl font-bold" style="color: var(--md-sys-color-primary);"></p>
-                </div>
+                     <p style="color: var(--md-sys-color-on-surface-variant);">Total Quality Mileage for the Week</p>
+                     <p id="runAiQualityKm" class="text-4xl font-bold" style="color: var(--md-sys-color-primary);"></p>
+                 </div>
                 <button id="generateWorkoutsBtn" class="m3-button-filled w-full font-bold py-3 px-4 rounded-full text-lg transition duration-300">Generate Workout Suggestions</button>
             </div>
             <div id="workoutSuggestionsContainer" class="mt-6 space-y-6"></div>
@@ -177,42 +200,42 @@
             <div id="plan-builder-content" class="sub-tab-content">
                 <div class="p-6 rounded-2xl space-y-6 m3-surface-container-high">
                      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label for="planWeeks" class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-on-surface-variant);">Number of Weeks</label>
-                            <input type="number" id="planWeeks" min="4" max="24" value="12" class="m3-input mt-1 block w-full rounded-lg p-3 text-base">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-on-surface-variant);">Plan Structure</label>
-                            <div class="flex items-center space-x-4 mt-2 p-1 rounded-full m3-surface-container">
-                                <label class="flex-1 text-center p-2 rounded-full cursor-pointer has-[:checked]:m3-button-tonal transition-colors">
-                                    <input type="radio" name="planStructure" value="3/1" class="sr-only" checked> 3/1
-                                </label>
-                                <label class="flex-1 text-center p-2 rounded-full cursor-pointer has-[:checked]:m3-button-tonal transition-colors">
-                                    <input type="radio" name="planStructure" value="4/1" class="sr-only"> 4/1
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+                         <div>
+                             <label for="planWeeks" class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-on-surface-variant);">Number of Weeks</label>
+                             <input type="number" id="planWeeks" min="4" max="24" value="12" class="m3-input mt-1 block w-full rounded-lg p-3 text-base">
+                         </div>
+                         <div>
+                             <label class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-on-surface-variant);">Plan Structure</label>
+                             <div class="flex items-center space-x-4 mt-2 p-1 rounded-full m3-surface-container">
+                                 <label class="flex-1 text-center p-2 rounded-full cursor-pointer has-[:checked]:m3-button-tonal transition-colors">
+                                     <input type="radio" name="planStructure" value="3/1" class="sr-only" checked> 3/1
+                                 </label>
+                                 <label class="flex-1 text-center p-2 rounded-full cursor-pointer has-[:checked]:m3-button-tonal transition-colors">
+                                     <input type="radio" name="planStructure" value="4/1" class="sr-only"> 4/1
+                                 </label>
+                             </div>
+                         </div>
+                     </div>
                     <button id="generatePlanBtn" class="m3-button-filled w-full font-bold py-3 px-4 rounded-full text-lg transition duration-300">Generate Plan</button>
                 </div>
                 <div id="planResultContainer" class="mt-6"></div>
             </div>
             <div id="weekly-adjust-content" class="sub-tab-content hidden">
                  <div class="p-6 rounded-2xl space-y-4 m3-surface-container-high">
-                    <div>
-                        <label for="mileageAdjust" class="block text-sm font-medium" style="color: var(--md-sys-color-on-surface-variant);">Adjust weekly mileage</label>
-                        <div class="flex items-center space-x-4 mt-2">
-                            <span class="text-lg font-mono">-20%</span>
-                            <input id="mileageAdjust" type="range" min="-20" max="15" value="0" class="w-full h-2 rounded-lg appearance-none cursor-pointer" style="background-color: var(--md-sys-color-surface-variant);">
-                            <span class="text-lg font-mono">+15%</span>
-                        </div>
-                        <div id="adjustmentValue" class="text-center font-bold text-3xl mt-2" style="color: var(--md-sys-color-primary);">0%</div>
-                    </div>
-                    <div class="text-center pt-4">
-                        <p style="color: var(--md-sys-color-on-surface-variant);">Current mileage: <span id="currentWeeklyKm"></span> km</p>
-                        <p class="text-xl font-semibold mt-1">New recommended mileage: <span id="newWeeklyKm" class="font-bold text-2xl" style="color: var(--md-sys-color-success);"></span> km</p>
-                    </div>
-                </div>
+                     <div>
+                         <label for="mileageAdjust" class="block text-sm font-medium" style="color: var(--md-sys-color-on-surface-variant);">Adjust weekly mileage</label>
+                         <div class="flex items-center space-x-4 mt-2">
+                             <span class="text-lg font-mono">-20%</span>
+                             <input id="mileageAdjust" type="range" min="-20" max="15" value="0" class="w-full h-2 rounded-lg appearance-none cursor-pointer" style="background-color: var(--md-sys-color-surface-variant);">
+                             <span class="text-lg font-mono">+15%</span>
+                         </div>
+                         <div id="adjustmentValue" class="text-center font-bold text-3xl mt-2" style="color: var(--md-sys-color-primary);">0%</div>
+                     </div>
+                     <div class="text-center pt-4">
+                         <p style="color: var(--md-sys-color-on-surface-variant);">Current mileage: <span id="currentWeeklyKm"></span> km</p>
+                         <p class="text-xl font-semibold mt-1">New recommended mileage: <span id="newWeeklyKm" class="font-bold text-2xl" style="color: var(--md-sys-color-success);"></span> km</p>
+                     </div>
+                 </div>
             </div>
         </div>
     </template>
@@ -262,8 +285,8 @@
                 return { success: false };
             } finally {
                 isProcessing = false;
-                saveBtn.disabled = false;
-                saveBtn.textContent = 'Save Athlete';
+                validateForm(); // Re-check form validity to set button state
+                document.getElementById('saveAthleteBtn').innerHTML = 'Save Athlete';
             }
         }
 
@@ -275,9 +298,9 @@
                  const response = await fetch(API_URL);
                  const result = await response.json();
                  if (result.success) {
-                    renderAthleteList(result.data);
+                     renderAthleteList(result.data);
                  } else {
-                    throw new Error(result.message);
+                     throw new Error(result.message);
                  }
             } catch(error) {
                  console.error('Fetch Error:', error);
@@ -334,10 +357,16 @@
                     const itemEl = document.createElement('div');
                     itemEl.className = `athlete-list-item p-3 rounded-xl flex justify-between items-center cursor-pointer m3-surface-container-high`;
                     itemEl.dataset.id = athlete.id;
+                    
+                    let paceInfo = [];
+                    if (athlete.ltPaceInSeconds) paceInfo.push(`LT2: ${secondsToPaceString(athlete.ltPaceInSeconds)}/km`);
+                    if (athlete.marathonPaceInSeconds) paceInfo.push(`MP: ${secondsToPaceString(athlete.marathonPaceInSeconds)}/km`);
+
+
                     itemEl.innerHTML = `
                         <div>
                             <p class="font-semibold">${athlete.name}</p>
-                            <p class="text-sm text-gray-400">${secondsToPaceString(athlete.ltPaceInSeconds)}/km - ${athlete.weeklyMileage}km/wk</p>
+                            <p class="text-sm text-gray-400">${paceInfo.join(' | ')} - ${athlete.weeklyMileage}km/wk</p>
                         </div>
                         <button class="delete-btn m3-button-error text-xs font-bold py-1 px-2 rounded-full opacity-50 hover:opacity-100 transition-opacity" data-id="${athlete.id}">✕</button>
                     `;
@@ -359,12 +388,18 @@
             currentAthlete = athleteData;
             document.getElementById('athleteId').value = athleteData.id;
             document.getElementById('athleteName').value = athleteData.name;
-            const mins = Math.floor(athleteData.ltPaceInSeconds / 60);
-            const secs = athleteData.ltPaceInSeconds % 60;
-            document.getElementById('ltPaceMin').value = mins;
-            document.getElementById('ltPaceSec').value = secs;
+            
+            const [ltMin, ltSec] = secondsToPace(athleteData.ltPaceInSeconds);
+            document.getElementById('ltPaceMin').value = ltMin;
+            document.getElementById('ltPaceSec').value = ltSec;
+            
+            const [mpMin, mpSec] = secondsToPace(athleteData.marathonPaceInSeconds);
+            document.getElementById('mpPaceMin').value = mpMin;
+            document.getElementById('mpPaceSec').value = mpSec;
+
             document.getElementById('weeklyMileage').value = athleteData.weeklyMileage;
             
+            validateForm();
             calculateAndDisplay(athleteData);
             updateSelectedAthleteHighlight();
         }
@@ -372,7 +407,7 @@
         function clearForm() {
             document.getElementById('athleteForm').reset();
             document.getElementById('athleteId').value = '';
-            currentAthlete = null;
+            validateForm();
             clearMainView();
         }
         
@@ -385,11 +420,11 @@
 
         function updateSelectedAthleteHighlight() {
              document.querySelectorAll('.athlete-list-item').forEach(item => {
-                if (currentAthlete && item.dataset.id === currentAthlete.id) {
-                    item.classList.add('selected');
-                } else {
-                    item.classList.remove('selected');
-                }
+                 if (currentAthlete && item.dataset.id === currentAthlete.id) {
+                     item.classList.add('selected');
+                 } else {
+                     item.classList.remove('selected');
+                 }
             });
         }
 
@@ -398,7 +433,12 @@
             document.getElementById('toolsetContainer').classList.remove('hidden');
             document.getElementById('welcomeMessage').classList.add('hidden');
             document.getElementById('selectedAthleteName').textContent = currentAthlete.name;
-            document.getElementById('selectedAthleteInfo').textContent = `LT2 Pace: ${secondsToPaceString(currentAthlete.ltPaceInSeconds)}/km | Weekly Mileage: ${currentAthlete.weeklyMileage} km`;
+            
+            let paceInfo = [];
+            if (athleteData.ltPaceInSeconds) paceInfo.push(`LT2 Pace: ${secondsToPaceString(athleteData.ltPaceInSeconds)}/km`);
+            if (athleteData.marathonPaceInSeconds) paceInfo.push(`Marathon Pace: ${secondsToPaceString(athleteData.marathonPaceInSeconds)}/km`);
+            document.getElementById('selectedAthleteInfo').innerHTML = `${paceInfo.join(' &nbsp;|&nbsp; ')} <br> Weekly Mileage: ${currentAthlete.weeklyMileage} km`;
+            
             switchTab('dashboard');
         }
 
@@ -431,6 +471,8 @@
                 hideConfirmationModal();
             });
             document.getElementById('cancelBtn').addEventListener('click', hideConfirmationModal);
+            
+            document.getElementById('athleteForm').addEventListener('input', validateForm);
         });
 
         document.getElementById('saveApiUrlBtn').addEventListener('click', setApiUrl);
@@ -444,8 +486,8 @@
                 localStorage.setItem('coachApiUrl', url);
                 statusEl.textContent = 'API URL set successfully. Ready to fetch data.';
                 statusEl.style.color = 'var(--md-sys-color-success)';
-                document.getElementById('saveAthleteBtn').disabled = false;
                 document.getElementById('clearFormBtn').disabled = false;
+                validateForm();
                 fetchAllAthletes();
             } else {
                 API_URL = '';
@@ -456,6 +498,28 @@
                 document.getElementById('clearFormBtn').disabled = true;
             }
         }
+        
+        function validateForm() {
+            const name = document.getElementById('athleteName').value.trim();
+            const mileage = parseFloat(document.getElementById('weeklyMileage').value);
+            const ltPace = paceStringToSeconds(document.getElementById('ltPaceMin').value, document.getElementById('ltPaceSec').value);
+            const mpPace = paceStringToSeconds(document.getElementById('mpPaceMin').value, document.getElementById('mpPaceSec').value);
+            const errorEl = document.getElementById('formError');
+
+            let isValid = true;
+            let errorMessage = '';
+
+            if (!name || mileage <= 0) {
+                isValid = false;
+            }
+            if (ltPace <= 0 && mpPace <= 0) {
+                isValid = false;
+                errorMessage = 'Please enter at least one pace (LT2 or Marathon).';
+            }
+
+            document.getElementById('saveAthleteBtn').disabled = !isValid;
+            errorEl.textContent = errorMessage;
+        }
 
         document.getElementById('athleteForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -463,11 +527,20 @@
                 id: document.getElementById('athleteId').value || null,
                 name: document.getElementById('athleteName').value.trim(),
                 ltPaceInSeconds: paceStringToSeconds(document.getElementById('ltPaceMin').value, document.getElementById('ltPaceSec').value),
+                marathonPaceInSeconds: paceStringToSeconds(document.getElementById('mpPaceMin').value, document.getElementById('mpPaceSec').value),
                 weeklyMileage: parseFloat(document.getElementById('weeklyMileage').value)
             };
-            if (athleteData.name && athleteData.ltPaceInSeconds > 0 && athleteData.weeklyMileage > 0) {
-                const success = await saveAthlete(athleteData);
-                if (success && !athleteData.id) {
+            
+            validateForm(); // Re-validate before submission
+            if(document.getElementById('saveAthleteBtn').disabled) return;
+
+            const success = await saveAthlete(athleteData);
+            if (success) {
+                 // if it was an update, re-select to show new data
+                if(athleteData.id) {
+                    const updatedAthlete = { ...currentAthlete, ...athleteData };
+                    selectAthlete(updatedAthlete);
+                } else { // if it was new, clear form
                     clearForm();
                 }
             }
@@ -479,6 +552,7 @@
         // --- UTILS & CALCULATIONS ---
         const secondsToPaceString = s => s > 0 ? `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}` : "N/A";
         const paceStringToSeconds = (min, sec) => (parseInt(min, 10) || 0) * 60 + (parseInt(sec, 10) || 0);
+        const secondsToPace = (s) => s > 0 ? [Math.floor(s / 60), s % 60] : ['', ''];
 
         function renderDashboard() {
             const distribution = calculateMileageDistribution(currentAthlete.weeklyMileage);
@@ -504,9 +578,49 @@
         }
         
         function renderPaceZones() {
-            document.getElementById('zoneLtPace').textContent = secondsToPaceString(currentAthlete.ltPaceInSeconds) + '/km';
-            document.getElementById('zonesTableContainer').innerHTML = `<table class="min-w-full"><thead class="sr-only"><tr><th>Zone</th><th>Pace</th></tr></thead>
-                <tbody class="space-y-3 flex flex-col">${calculatePaceZones(currentAthlete.ltPaceInSeconds).map(z => `<tr class="flex justify-between items-center p-4 rounded-2xl" style="background-color:${z.color}1A;">
+            const subtabLt2 = document.getElementById('zone-subtab-lt2');
+            const subtabMp = document.getElementById('zone-subtab-mp');
+            const contentLt2 = document.getElementById('zones-lt2-content');
+            const contentMp = document.getElementById('zones-mp-content');
+
+            subtabLt2.disabled = !currentAthlete.ltPaceInSeconds;
+            subtabMp.disabled = !currentAthlete.marathonPaceInSeconds;
+
+            const switchZoneTab = (type) => {
+                if (type === 'lt2') {
+                    subtabLt2.classList.add('active');
+                    subtabMp.classList.remove('active');
+                    contentLt2.classList.remove('hidden');
+                    contentMp.classList.add('hidden');
+                } else { // mp
+                    subtabMp.classList.add('active');
+                    subtabLt2.classList.remove('active');
+                    contentMp.classList.remove('hidden');
+                    contentLt2.classList.add('hidden');
+                }
+            };
+            
+            subtabLt2.addEventListener('click', () => switchZoneTab('lt2'));
+            subtabMp.addEventListener('click', () => switchZoneTab('mp'));
+
+            if (currentAthlete.ltPaceInSeconds) {
+                document.getElementById('zoneLtPace').textContent = secondsToPaceString(currentAthlete.ltPaceInSeconds) + '/km';
+                document.getElementById('zonesTableContainerLT2').innerHTML = renderZoneTable(calculateLtPaceZones(currentAthlete.ltPaceInSeconds));
+                switchZoneTab('lt2');
+            } else if (currentAthlete.marathonPaceInSeconds) {
+                switchZoneTab('mp');
+            }
+
+            if (currentAthlete.marathonPaceInSeconds) {
+                document.getElementById('zoneMpPace').textContent = secondsToPaceString(currentAthlete.marathonPaceInSeconds) + '/km';
+                 document.getElementById('zonesTableContainerMP').innerHTML = renderZoneTable(calculateMarathonPaceZones(currentAthlete.marathonPaceInSeconds));
+                 if(!currentAthlete.ltPaceInSeconds) switchZoneTab('mp');
+            }
+        }
+        
+        function renderZoneTable(zonesData) {
+            return `<table class="min-w-full"><thead class="sr-only"><tr><th>Zone</th><th>Pace</th></tr></thead>
+                <tbody class="space-y-3 flex flex-col">${zonesData.map(z => `<tr class="flex justify-between items-center p-4 rounded-2xl" style="background-color:${z.color}1A;">
                     <td class="flex flex-col">
                         <span class="font-bold text-lg" style="color:${z.color};">${z.name} - ${z.intensity}</span>
                         <span class="text-sm" style="color:var(--md-sys-color-on-surface-variant);">${z.percent}</span>
@@ -514,6 +628,7 @@
                     <td class="font-mono text-xl font-semibold text-right" style="color:var(--md-sys-color-on-surface);">${z.pace}</td>
                 </tr>`).join('')}</tbody></table>`;
         }
+
 
         function renderRunAI() {
             const qualityKm = calculateMileageDistribution(currentAthlete.weeklyMileage).quality;
@@ -564,7 +679,31 @@
             slider.oninput = e => updateWeeklyUI(initialMileage, e.target.value);
         }
 
-        const calculatePaceZones = ltPace => [ { name: 'Z1', intensity: 'Recovery', percent: '60-74%', low: 60, high: 74, color: '#6da2ff' }, { name: 'Z2', intensity: 'Aerobic', percent: '75-87%', low: 75, high: 87, color: '#4db6ac' }, { name: 'Z3', intensity: 'Tempo', percent: '88-100%', low: 88, high: 100, color: '#ffd54f' }, { name: 'Z4', intensity: 'Threshold', percent: '101-115%', low: 101, high: 115, color: '#ff8a65' }, { name: 'Z5', intensity: 'Anaerobic', percent: '116-180%', low: 116, high: 180, color: '#f06292' } ].map(z => ({...z, pace: `${secondsToPaceString(ltPace / (z.high / 100))} - ${secondsToPaceString(ltPace / (z.low / 100))}`}));
+        const calculateLtPaceZones = ltPace => [ { name: 'Z1', intensity: 'Recovery', percent: '60-74%', low: 60, high: 74, color: '#6da2ff' }, { name: 'Z2', intensity: 'Aerobic', percent: '75-87%', low: 75, high: 87, color: '#4db6ac' }, { name: 'Z3', intensity: 'Tempo', percent: '88-100%', low: 88, high: 100, color: '#ffd54f' }, { name: 'Z4', intensity: 'Threshold', percent: '101-115%', low: 101, high: 115, color: '#ff8a65' }, { name: 'Z5', intensity: 'Anaerobic', percent: '116-180%', low: 116, high: 180, color: '#f06292' } ].map(z => ({...z, pace: `${secondsToPaceString(ltPace / (z.high / 100))} - ${secondsToPaceString(ltPace / (z.low / 100))}`}));
+        
+        // NEW: Marathon Pace Zone Calculation
+        const calculateMarathonPaceZones = mpSeconds => {
+             const zones = [
+                { name: 'Zone 5', intensity: 'Intervals', percent: '87% - 92%', lowP: 0.87, highP: 0.92, color: '#f06292' },
+                { name: 'Zone 4', intensity: 'Tempo', percent: '95% - 98%', lowP: 0.95, highP: 0.98, color: '#ff8a65' },
+                { name: 'Zone 3', intensity: 'Marathon Pace', percent: '100%', lowP: 1.00, highP: 1.00, color: '#ffd54f' },
+                { name: 'Zone 2', intensity: 'Easy/Long', percent: '110% - 120%', lowP: 1.10, highP: 1.20, color: '#4db6ac' },
+                { name: 'Zone 1', intensity: 'Recovery', percent: '120% - 135%+', lowP: 1.20, highP: 1.35, color: '#6da2ff' }
+            ];
+
+            return zones.map(z => {
+                let paceString;
+                if (z.lowP === z.highP) {
+                    paceString = secondsToPaceString(mpSeconds * z.lowP);
+                } else {
+                    const fasterPace = secondsToPaceString(mpSeconds * z.lowP);
+                    const slowerPace = secondsToPaceString(mpSeconds * z.highP);
+                    paceString = `${fasterPace} - ${slowerPace}`;
+                }
+                return {...z, pace: paceString};
+            }).reverse(); // Reverse to show Z1 to Z5
+        };
+
         const calculateMileageDistribution = total => { const long = Math.round(total * 0.28); const quality = Math.round(total * 0.21); return { longRun: long, quality, easy: total - long - quality }; };
         function calculateMultiWeekPlan(startMileage, totalWeeks, structure) { const plan = []; let currentMileage = startMileage; const cycleLength = parseInt(structure.split('/')[0]) + 1; for (let i = 1; i <= totalWeeks; i++) { if (i % cycleLength === 0) { currentMileage = Math.round((plan[plan.length-1]?.mileage || startMileage) * 0.8); plan.push({ week: i, mileage: currentMileage, type: 'down' }); } else { if (i > 1 && plan[plan.length-1]?.type === 'down') currentMileage = Math.round(plan[plan.length-2].mileage * 1.10); else currentMileage = (i === 1) ? startMileage : Math.round(currentMileage * 1.10); plan.push({ week: i, mileage: currentMileage, type: 'up' }); } } return plan; }
         function generateWorkoutSuggestions(qualityKm) { const tempoKm = Math.round(qualityKm * 0.75); const intervalKm = qualityKm - tempoKm; let tempoSuggestions = [], intervalSuggestions = []; if (tempoKm >= 3) tempoSuggestions.push(`<b>Continuous:</b> ${tempoKm}km @ Z3 pace.`); if (tempoKm >= 4) { const r = Math.floor(tempoKm / 2); if (r >= 2) tempoSuggestions.push(`<b>Intervals:</b> 2 x ${r}km @ low Z4, 3' rest.`); } if (tempoKm >= 6) { const r = Math.floor(tempoKm / 3); if (r >= 2) tempoSuggestions.push(`<b>Intervals:</b> 3 x ${r}km @ low Z4, 3-4' rest.`); } if (!tempoSuggestions.length) tempoSuggestions.push("Not enough mileage for standard tempo."); if (intervalKm >= 1.6) intervalSuggestions.push(`<b>Short:</b> ${Math.floor(intervalKm / 0.4)}x400m @ high Z4, 1:1 rest.`); if (intervalKm >= 2.4) intervalSuggestions.push(`<b>Medium:</b> ${Math.floor(intervalKm / 0.8)}x800m @ Z4, 2' rest.`); if (intervalKm >= 3.0) intervalSuggestions.push(`<b>Long:</b> ${Math.floor(intervalKm / 1.0)}x1k @ Z4, 2-3' rest.`); if (!intervalSuggestions.length) intervalSuggestions.push("Not enough mileage for standard intervals."); return { tempo: tempoSuggestions, intervals: intervalSuggestions, tempoKm, intervalKm }; }
