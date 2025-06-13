@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Teko:wght@600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
     <style>
         :root {
             --md-sys-color-primary: #6da2ff;
@@ -24,6 +25,8 @@
             --md-sys-color-on-error: #690005;
             --md-sys-color-success: #7fdd77;
             --md-sys-color-tertiary: #f06292;
+            --navy-blue: #1e3a8a;
+            --purple: #7e22ce;
         }
         body { font-family: 'Inter', sans-serif; background-color: var(--md-sys-color-background); color: var(--md-sys-color-on-background); }
         .m3-surface-container { background-color: var(--md-sys-color-surface-container); }
@@ -45,6 +48,7 @@
         .athlete-list-item.selected { border-color: var(--md-sys-color-primary); background-color: var(--md-sys-color-primary-container); }
         .spinner { border-top-color: var(--md-sys-color-primary); }
         #confirmationModal { transition: opacity 0.3s ease; }
+        .file-input-label { cursor: pointer; background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); padding: 0.75rem 1.25rem; border-radius: 999px; display: inline-block; text-align: center; }
     </style>
 </head>
 <body class="antialiased">
@@ -55,54 +59,44 @@
             <p style="color: var(--md-sys-color-secondary);" class="mt-1 text-lg">Tailoring to the Finish Line</p>
         </header>
 
-        <!-- App Script URL Input (hidden by default now) -->
-        <div id="apiUrlContainer" class="m3-surface-container p-4 rounded-2xl mb-6 max-w-3xl mx-auto" style="display: none;">
-             <label for="apiUrl" class="block text-sm font-medium mb-2 text-center" style="color: var(--md-sys-color-primary);">Google Apps Script URL</label>
-             <div class="flex items-center space-x-2">
-                 <input type="url" id="apiUrl" placeholder="Paste your deployed web app URL here" class="m3-input block w-full rounded-lg p-3 text-base">
-                 <button id="saveApiUrlBtn" class="m3-button-filled font-bold py-3 px-5 rounded-lg transition duration-300">Set</button>
-             </div>
-             <p id="apiUrlStatus" class="text-xs text-center mt-2 text-gray-400">You must set your Apps Script URL to load and save data.</p>
-        </div>
-
-
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Left Column: Athlete Management -->
-            <div class="m3-surface-container lg:col-span-1 p-6 rounded-3xl h-full flex flex-col">
-                <h2 class="text-2xl font-medium mb-5" style="color: var(--md-sys-color-on-surface-variant);">Manage Athletes</h2>
+            <div class="m3-surface-container lg:col-span-1 p-6 rounded-3xl h-full flex flex-col border-2 border-white" style="box-shadow: 0 0 0 4px var(--purple), 0 0 0 8px var(--navy-blue);">
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-2xl font-medium" style="color: var(--md-sys-color-on-surface-variant);">Athlete ID</h2>
+                    <button id="settingsBtn" class="text-2xl" style="color: var(--md-sys-color-secondary);">⚙️</button>
+                </div>
                 <form id="athleteForm" class="space-y-4">
                     <input type="hidden" id="athleteId">
-                    <div>
-                        <label for="athleteName" class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-primary);">Athlete Name</label>
-                        <input type="text" id="athleteName" placeholder="New Runner" class="m3-input mt-1 block w-full rounded-lg p-3 text-base" required>
-                    </div>
+                    <input type="text" id="athleteName" placeholder="New Runner Name" class="m3-input block w-full rounded-lg p-3 text-base" required>
+                    
                     <div>
                         <label class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-primary);">LT2 Pace (/km)</label>
-                         <div class="flex items-center space-x-2">
+                        <div class="flex items-center space-x-2">
                              <input type="number" id="ltPaceMin" placeholder="min" min="0" class="m3-input mt-1 block w-full rounded-lg p-3 text-base">
                              <span style="color: var(--md-sys-color-on-surface-variant);">:</span>
                              <input type="number" id="ltPaceSec" placeholder="sec" min="0" max="59" class="m3-input mt-1 block w-full rounded-lg p-3 text-base">
-                         </div>
+                        </div>
                     </div>
-                     <!-- NEW: Marathon Pace Input -->
-                     <div>
-                        <label class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-primary);">Marathon Pace (/km)</label>
-                         <div class="flex items-center space-x-2">
-                             <input type="number" id="mpPaceMin" placeholder="min" min="0" class="m3-input mt-1 block w-full rounded-lg p-3 text-base">
-                             <span style="color: var(--md-sys-color-on-surface-variant);">:</span>
-                             <input type="number" id="mpPaceSec" placeholder="sec" min="0" max="59" class="m3-input mt-1 block w-full rounded-lg p-3 text-base">
-                         </div>
+
+                    <div class="grid grid-cols-3 gap-3 items-end">
+                        <div class="col-span-1">
+                            <label for="weeklyMileage" class="block text-xs font-medium mb-1" style="color: var(--md-sys-color-primary);">Mileage</label>
+                            <input type="number" id="weeklyMileage" min="0" placeholder="km" class="m3-input block w-full rounded-lg p-2 text-base" required>
+                        </div>
+                        <div class="col-span-2 flex flex-col gap-2">
+                             <button type="submit" id="saveAthleteBtn" class="m3-button-filled w-full font-bold py-2 rounded-full text-md transition duration-300" disabled>Save Athlete</button>
+                             <button type="button" id="clearFormBtn" class="m3-button-tonal w-full font-bold py-1.5 rounded-full text-sm" disabled>New Athlete</button>
+                        </div>
                     </div>
-                    <div>
-                         <label for="weeklyMileage" class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-primary);">Current Weekly Mileage (km)</label>
-                        <input type="number" id="weeklyMileage" min="0" placeholder="e.g., 50" class="m3-input mt-1 block w-full rounded-lg p-3 text-base" required>
-                    </div>
-                    <p id="formError" class="text-sm text-center" style="color: var(--md-sys-color-error);"></p>
-                    <button type="submit" id="saveAthleteBtn" class="m3-button-filled w-full font-bold py-3 px-4 rounded-full text-lg transition duration-300 mt-2" disabled>Save Athlete</button>
-                    <button type="button" id="clearFormBtn" class="m3-button-tonal w-full font-bold py-2 px-4 rounded-full text-md" disabled>New Athlete</button>
+                     <p id="formError" class="text-sm text-center" style="color: var(--md-sys-color-error);"></p>
                 </form>
-                <div id="athleteListContainer" class="mt-6 flex-grow">
-                     <h3 class="text-xl font-medium mb-3" style="color: var(--md-sys-color-on-surface-variant);">Saved Athletes</h3>
+
+                <div class="mt-6">
+                    <button id="toggleAthletesBtn" class="m3-button-tonal w-full font-bold py-2 px-4 rounded-full text-md">Show Athletes</button>
+                </div>
+
+                <div id="athleteListContainer" class="mt-4 flex-grow hidden">
                      <div id="athleteList" class="space-y-2">
                          <p id="loadingAthletes" class="text-gray-400">Set API URL to load athletes.</p>
                      </div>
@@ -110,17 +104,24 @@
             </div>
 
             <!-- Right Column: Toolset / Welcome Message -->
-            <div id="toolsetContainer" class="m3-surface-container lg:col-span-2 p-6 rounded-3xl hidden">
-                 <div id="athleteHeader" class="text-center mb-6 border-b border-gray-700 pb-4">
-                     <h2 id="selectedAthleteName" class="text-3xl font-normal text-white"></h2>
-                     <p id="selectedAthleteInfo" class="text-sm" style="color: var(--md-sys-color-on-surface-variant);"></p>
-                 </div>
+            <div id="toolsetContainer" class="m3-surface-container lg:col-span-2 p-6 rounded-3xl hidden border-2 border-white">
+                 <div id="athleteHeader" class="flex flex-col sm:flex-row justify-between items-stretch gap-4 mb-6 pb-4 border-b border-gray-700">
+                    <div class="flex-1 p-4 rounded-xl border-2 border-blue-800">
+                        <h2 id="selectedAthleteName" class="text-3xl font-normal text-white text-center h-full flex items-center justify-center"></h2>
+                    </div>
+                    <div class="flex-1 p-4 rounded-xl border-2 border-purple-600">
+                        <div id="selectedAthleteInfo" class="text-sm text-center h-full flex flex-col justify-center items-center" style="color: var(--md-sys-color-on-surface-variant);">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
                  <div class="flex flex-col md:flex-row gap-8">
                      <nav class="flex flex-row md:flex-col md:space-y-2 md:w-48 overflow-x-auto pb-2 md:pb-0">
                          <button id="tab-dashboard" class="sidebar-button flex-shrink-0">Dashboard</button>
                          <button id="tab-zones" class="sidebar-button flex-shrink-0">Zones</button>
                          <button id="tab-runAI" class="sidebar-button flex-shrink-0">RunAI</button>
                          <button id="tab-mileage" class="sidebar-button flex-shrink-0">Mileage</button>
+                         <button id="tab-cardiac-drift" class="sidebar-button flex-shrink-0">Cardiac Drift</button>
                      </nav>
                      <main id="tabContent" class="flex-grow"></main>
                  </div>
@@ -157,32 +158,19 @@
     </template>
     <template id="template-zones">
         <div id="content-zones">
-             <div class="flex justify-center mb-4">
-                 <div class="flex p-1 rounded-full m3-surface-container-high">
-                     <button id="zone-subtab-lt2" class="sub-tab-button py-2 px-5 rounded-full" data-subtab="zones-lt2-content">LT2 Zones</button>
-                     <button id="zone-subtab-mp" class="sub-tab-button py-2 px-5 rounded-full" data-subtab="zones-mp-content">Marathon Zones</button>
-                 </div>
-             </div>
-             <div id="zones-lt2-content" class="sub-tab-content hidden">
-                 <h3 class="text-xl font-medium mb-2 text-center" style="color: var(--md-sys-color-primary);">LT2 Pace Zones</h3>
-                 <p class="text-sm mb-4 text-center" style="color: var(--md-sys-color-on-surface-variant);">Based on an LT2 Pace of <span id="zoneLtPace" class="font-bold"></span>.</p>
-                 <div id="zonesTableContainerLT2" class="overflow-x-auto"></div>
-             </div>
-            <div id="zones-mp-content" class="sub-tab-content hidden">
-                 <h3 class="text-xl font-medium mb-2 text-center" style="color: var(--md-sys-color-primary);">Marathon Pace Zones</h3>
-                 <p class="text-sm mb-4 text-center" style="color: var(--md-sys-color-on-surface-variant);">Based on a Marathon Pace of <span id="zoneMpPace" class="font-bold"></span>.</p>
-                 <div id="zonesTableContainerMP" class="overflow-x-auto"></div>
-             </div>
+            <h3 class="text-xl font-medium mb-2 text-center" style="color: var(--md-sys-color-primary);">LT2 Pace Zones</h3>
+            <p class="text-sm mb-4 text-center" style="color: var(--md-sys-color-on-surface-variant);">Based on an LT2 Pace of <span id="zoneLtPace" class="font-bold"></span>.</p>
+            <div id="zonesTableContainerLT2" class="overflow-x-auto"></div>
         </div>
     </template>
     <template id="template-runAI">
         <div id="content-runAI">
             <h3 class="text-xl font-medium mb-4" style="color: var(--md-sys-color-primary);">RunAI Workout Generator</h3>
             <div class="p-6 rounded-2xl space-y-4 m3-surface-container-high">
-                 <div class="text-center">
-                     <p style="color: var(--md-sys-color-on-surface-variant);">Total Quality Mileage for the Week</p>
-                     <p id="runAiQualityKm" class="text-4xl font-bold" style="color: var(--md-sys-color-primary);"></p>
-                 </div>
+                <div class="text-center">
+                    <p style="color: var(--md-sys-color-on-surface-variant);">Total Quality Mileage for the Week</p>
+                    <p id="runAiQualityKm" class="text-4xl font-bold" style="color: var(--md-sys-color-primary);"></p>
+                </div>
                 <button id="generateWorkoutsBtn" class="m3-button-filled w-full font-bold py-3 px-4 rounded-full text-lg transition duration-300">Generate Workout Suggestions</button>
             </div>
             <div id="workoutSuggestionsContainer" class="mt-6 space-y-6"></div>
@@ -199,23 +187,32 @@
             </div>
             <div id="plan-builder-content" class="sub-tab-content">
                 <div class="p-6 rounded-2xl space-y-6 m3-surface-container-high">
-                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                         <div>
-                             <label for="planWeeks" class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-on-surface-variant);">Number of Weeks</label>
-                             <input type="number" id="planWeeks" min="4" max="24" value="12" class="m3-input mt-1 block w-full rounded-lg p-3 text-base">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="planWeeks" class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-on-surface-variant);">Number of Weeks</label>
+                            <input type="number" id="planWeeks" min="4" max="24" value="12" class="m3-input mt-1 block w-full rounded-lg p-3 text-base">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-on-surface-variant);">Plan Structure</label>
+                            <div class="flex items-center space-x-4 mt-2 p-1 rounded-full m3-surface-container">
+                                <label class="flex-1 text-center p-2 rounded-full cursor-pointer has-[:checked]:m3-button-tonal transition-colors">
+                                    <input type="radio" name="planStructure" value="3/1" class="sr-only" checked> 3/1
+                                </label>
+                                <label class="flex-1 text-center p-2 rounded-full cursor-pointer has-[:checked]:m3-button-tonal transition-colors">
+                                    <input type="radio" name="planStructure" value="4/1" class="sr-only"> 4/1
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="planBuildRate" class="block text-sm font-medium" style="color: var(--md-sys-color-on-surface-variant);">Weekly Build Rate</label>
+                         <div class="flex items-center space-x-4 mt-2">
+                             <span class="text-sm font-mono">5%</span>
+                             <input id="planBuildRate" type="range" min="5" max="15" value="10" class="w-full h-2 rounded-lg appearance-none cursor-pointer" style="background-color: var(--md-sys-color-surface-variant);">
+                             <span class="text-sm font-mono">15%</span>
                          </div>
-                         <div>
-                             <label class="block text-sm font-medium mb-1" style="color: var(--md-sys-color-on-surface-variant);">Plan Structure</label>
-                             <div class="flex items-center space-x-4 mt-2 p-1 rounded-full m3-surface-container">
-                                 <label class="flex-1 text-center p-2 rounded-full cursor-pointer has-[:checked]:m3-button-tonal transition-colors">
-                                     <input type="radio" name="planStructure" value="3/1" class="sr-only" checked> 3/1
-                                 </label>
-                                 <label class="flex-1 text-center p-2 rounded-full cursor-pointer has-[:checked]:m3-button-tonal transition-colors">
-                                     <input type="radio" name="planStructure" value="4/1" class="sr-only"> 4/1
-                                 </label>
-                             </div>
-                         </div>
-                     </div>
+                         <div id="planBuildRateValue" class="text-center font-bold text-lg mt-1" style="color: var(--md-sys-color-primary);">10%</div>
+                    </div>
                     <button id="generatePlanBtn" class="m3-button-filled w-full font-bold py-3 px-4 rounded-full text-lg transition duration-300">Generate Plan</button>
                 </div>
                 <div id="planResultContainer" class="mt-6"></div>
@@ -240,6 +237,76 @@
         </div>
     </template>
     
+    <template id="template-settings">
+        <div id="content-settings">
+            <h3 class="text-xl font-medium mb-4" style="color: var(--md-sys-color-primary);">Athlete Zone Settings</h3>
+            <div class="space-y-6">
+                <div id="lt2-zone-settings" class="p-4 rounded-2xl m3-surface-container-high space-y-3"></div>
+            </div>
+             <div class="mt-6 flex flex-col sm:flex-row gap-3">
+                <button id="saveZoneSettingsBtn" class="m3-button-filled w-full font-bold py-3 px-4 rounded-full text-lg">Save Custom Zones</button>
+                <button id="resetZoneSettingsBtn" class="m3-button-tonal w-full font-bold py-3 px-4 rounded-full text-lg">Reset to Defaults</button>
+            </div>
+        </div>
+    </template>
+
+    <template id="template-cardiac-drift">
+        <div id="content-cardiac-drift">
+            <h3 class="text-xl font-medium mb-4" style="color: var(--md-sys-color-primary);">Cardiac Drift Calculator</h3>
+            <p class="text-sm mb-4" style="color: var(--md-sys-color-on-surface-variant);">
+                Calculate Pa:Hr drift (Aerobic Decoupling) from a 1-hour aerobic run. A drift under 5% indicates good aerobic fitness.
+            </p>
+            
+            <div class="flex justify-center mb-4">
+                <div class="flex p-1 rounded-full m3-surface-container-high">
+                    <button class="sub-tab-button py-2 px-5 rounded-full active" data-subtab="drift-file-content">Upload TCX File</button>
+                    <button class="sub-tab-button py-2 px-5 rounded-full" data-subtab="drift-manual-content">Manual Input</button>
+                </div>
+            </div>
+
+            <div id="drift-file-content" class="sub-tab-content space-y-4">
+                <div class="p-4 rounded-2xl m3-surface-container-high text-center">
+                    <label for="tcxInput" class="file-input-label">Select TCX File</label>
+                    <input class="hidden" type="file" id="tcxInput" accept=".tcx">
+                    <p id="drift-filename-display" class="text-xs mt-2" style="color: var(--md-sys-color-secondary);"></p>
+                </div>
+                <div id="drift-viz" class="w-full h-80"></div>
+                <div id="drift-summary-file" class="p-4 rounded-2xl m3-surface-container-high"></div>
+            </div>
+
+            <div id="drift-manual-content" class="sub-tab-content hidden space-y-4">
+                <div class="p-6 rounded-2xl m3-surface-container-high space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                           <h4 class="font-semibold mb-2 text-lg" style="color: var(--md-sys-color-on-primary-container);">First 10 mins</h4>
+                           <div class="space-y-2">
+                                <input type="number" id="manual_hr_start" placeholder="Avg HR" class="m3-input w-full p-2 rounded-lg">
+                                <div class="flex items-center space-x-1">
+                                    <input type="number" id="manual_pace_min_start" placeholder="Pace Min" class="m3-input w-full p-2 rounded-lg">
+                                    <span>:</span>
+                                    <input type="number" id="manual_pace_sec_start" placeholder="Pace Sec" class="m3-input w-full p-2 rounded-lg">
+                                </div>
+                           </div>
+                        </div>
+                         <div>
+                           <h4 class="font-semibold mb-2 text-lg" style="color: var(--md-sys-color-tertiary);">Last 10 mins</h4>
+                           <div class="space-y-2">
+                                <input type="number" id="manual_hr_end" placeholder="Avg HR" class="m3-input w-full p-2 rounded-lg">
+                                 <div class="flex items-center space-x-1">
+                                    <input type="number" id="manual_pace_min_end" placeholder="Pace Min" class="m3-input w-full p-2 rounded-lg">
+                                    <span>:</span>
+                                    <input type="number" id="manual_pace_sec_end" placeholder="Pace Sec" class="m3-input w-full p-2 rounded-lg">
+                                </div>
+                           </div>
+                        </div>
+                    </div>
+                    <button id="calculateDriftManualBtn" class="m3-button-filled w-full font-bold py-2 rounded-full text-md">Calculate Drift</button>
+                </div>
+                <div id="drift-summary-manual" class="p-4 rounded-2xl m3-surface-container-high"></div>
+            </div>
+        </div>
+    </template>
+    
 
     <script>
         // --- GLOBAL STATE ---
@@ -248,19 +315,30 @@
         let API_URL = '';
         let isProcessing = false;
         let confirmCallback = null;
+        let lastDriftValue = null;
 
+        // --- DEFAULT ZONE DEFINITIONS ---
+        const DEFAULT_LT2_ZONES = [
+            { name: 'Z1', intensity: 'Recovery', percent: '60-74%', low: 60, high: 74, color: '#6da2ff' }, 
+            { name: 'Z2', intensity: 'Aerobic', percent: '75-87%', low: 75, high: 87, color: '#4db6ac' }, 
+            { name: 'Z3', intensity: 'Tempo', percent: '88-100%', low: 88, high: 100, color: '#ffd54f' }, 
+            { name: 'Z4', intensity: 'Threshold', percent: '101-115%', low: 101, high: 115, color: '#ff8a65' }, 
+            { name: 'Z5', intensity: 'Anaerobic', percent: '116-180%', low: 116, high: 180, color: '#f06292' }
+        ];
+        
         // --- CORE API & DATA FUNCTIONS ---
         async function fetchWithProcessing(action, payload) {
             if (!API_URL) {
                 alert('Please set your Google Apps Script URL first.');
                 return { success: false };
             }
-            if (isProcessing) return; // Prevent multiple simultaneous requests
+            if (isProcessing) return; 
             isProcessing = true;
             
-            const saveBtn = document.getElementById('saveAthleteBtn');
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = `<div class="spinner animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900 mx-auto"></div>`;
+            const btn = document.getElementById('saveAthleteBtn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<div class="spinner animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900 mx-auto"></div>`;
 
             try {
                 const response = await fetch(API_URL, {
@@ -285,34 +363,51 @@
                 return { success: false };
             } finally {
                 isProcessing = false;
-                validateForm(); // Re-check form validity to set button state
-                document.getElementById('saveAthleteBtn').innerHTML = 'Save Athlete';
+                btn.innerHTML = originalText;
+                validateForm(); 
             }
         }
 
         async function fetchAllAthletes() {
             if (!API_URL) return;
             const listEl = document.getElementById('athleteList');
-            listEl.innerHTML = `<p id="loadingAthletes" class="text-gray-400">Loading athletes...</p>`;
+            const loadingEl = document.getElementById('loadingAthletes');
+            if (loadingEl) {
+                loadingEl.style.display = 'block';
+            }
             try {
                  const response = await fetch(API_URL);
                  const result = await response.json();
                  if (result.success) {
                      renderAthleteList(result.data);
+                     return result;
                  } else {
                      throw new Error(result.message);
                  }
             } catch(error) {
                  console.error('Fetch Error:', error);
                  listEl.innerHTML = `<p class="text-red-400">Error loading athletes. Check console and API URL.</p>`;
+                 return { success: false, data: [] };
+            } finally {
+                if(loadingEl) {
+                    loadingEl.style.display = 'none';
+                }
             }
         }
 
         async function saveAthlete(athleteData) {
             const action = athleteData.id ? 'UPDATE' : 'CREATE';
-            const result = await fetchWithProcessing(action, athleteData);
+
+            const payload = { ...athleteData };
+            
+            const lt2Paces = calculateLtPaceZones(payload.ltPaceInSeconds, payload.lt2Zones);
+            lt2Paces.forEach((z, i) => {
+                payload[`lt2_zone${i + 1}_pace`] = z.pace;
+            });
+
+            const result = await fetchWithProcessing(action, payload);
             if (result.success) {
-                await fetchAllAthletes(); // Refresh list after saving
+                await fetchAllAthletes(); 
                 return true;
             }
             return false;
@@ -323,12 +418,38 @@
                 const result = await fetchWithProcessing('DELETE', { id: athleteId });
                 if (result.success) {
                     if (currentAthlete && currentAthlete.id === athleteId) {
-                        clearMainView();
+                        clearForm(); 
                     }
-                    await fetchAllAthletes(); // Refresh list
+                    await fetchAllAthletes(); 
                 }
             });
         }
+        
+        async function saveDriftResult() {
+            if (!currentAthlete) {
+                alert("Please select an athlete first.");
+                return;
+            }
+            if (lastDriftValue === null) {
+                alert("No drift value has been calculated yet.");
+                return;
+            }
+
+            const payload = {
+                athleteId: currentAthlete.id,
+                date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+                driftValue: lastDriftValue.toFixed(2)
+            };
+            
+            const result = await fetchWithProcessing('SAVE_DRIFT', payload);
+
+            if (result.success) {
+                alert(`Drift result of ${payload.driftValue}% saved for ${currentAthlete.name}.`);
+            } else {
+                alert("Failed to save drift result.");
+            }
+        }
+
 
         // --- UI & RENDERING ---
         function showConfirmationModal(message, onConfirm) {
@@ -354,38 +475,48 @@
                 listEl.innerHTML = '<p class="text-gray-400">No athletes saved yet. Add one above.</p>';
             } else {
                  athletes.forEach(athlete => {
-                    const itemEl = document.createElement('div');
-                    itemEl.className = `athlete-list-item p-3 rounded-xl flex justify-between items-center cursor-pointer m3-surface-container-high`;
-                    itemEl.dataset.id = athlete.id;
-                    
-                    let paceInfo = [];
-                    if (athlete.ltPaceInSeconds) paceInfo.push(`LT2: ${secondsToPaceString(athlete.ltPaceInSeconds)}/km`);
-                    if (athlete.marathonPaceInSeconds) paceInfo.push(`MP: ${secondsToPaceString(athlete.marathonPaceInSeconds)}/km`);
-
-
-                    itemEl.innerHTML = `
-                        <div>
-                            <p class="font-semibold">${athlete.name}</p>
-                            <p class="text-sm text-gray-400">${paceInfo.join(' | ')} - ${athlete.weeklyMileage}km/wk</p>
-                        </div>
-                        <button class="delete-btn m3-button-error text-xs font-bold py-1 px-2 rounded-full opacity-50 hover:opacity-100 transition-opacity" data-id="${athlete.id}">✕</button>
-                    `;
-                    itemEl.addEventListener('click', (e) => {
-                        if (e.target.classList.contains('delete-btn')) return;
-                        selectAthlete(athlete);
-                    });
-                    itemEl.querySelector('.delete-btn').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        deleteAthlete(athlete.id);
-                    });
-                    listEl.appendChild(itemEl);
-                });
+                     const itemEl = document.createElement('div');
+                     itemEl.className = `athlete-list-item p-3 rounded-xl flex justify-between items-center cursor-pointer m3-surface-container-high`;
+                     itemEl.dataset.id = athlete.id;
+                     
+                     let paceInfo = [];
+                     if (athlete.ltPaceInSeconds) paceInfo.push(`LT2: ${secondsToPaceString(athlete.ltPaceInSeconds)}`);
+                     
+                     itemEl.innerHTML = `
+                         <div>
+                             <p class="font-semibold">${athlete.name}</p>
+                             <p class="text-sm text-gray-400">${paceInfo.join(' | ')} - ${athlete.weeklyMileage}km</p>
+                         </div>
+                         <button class="delete-btn m3-button-error text-xs font-bold py-1 px-2 rounded-full opacity-50 hover:opacity-100 transition-opacity" data-id="${athlete.id}">✕</button>
+                     `;
+                     itemEl.addEventListener('click', (e) => {
+                         if (e.target.classList.contains('delete-btn')) return;
+                         selectAthlete(athlete);
+                     });
+                     itemEl.querySelector('.delete-btn').addEventListener('click', (e) => {
+                         e.stopPropagation();
+                         deleteAthlete(athlete.id);
+                     });
+                     listEl.appendChild(itemEl);
+                 });
             }
             updateSelectedAthleteHighlight();
         }
 
         function selectAthlete(athleteData) {
-            currentAthlete = athleteData;
+             try {
+                currentAthlete = {
+                    ...athleteData,
+                    lt2Zones: typeof athleteData.lt2Zones === 'string' ? JSON.parse(athleteData.lt2Zones) : (athleteData.lt2Zones || JSON.parse(JSON.stringify(DEFAULT_LT2_ZONES)))
+                };
+            } catch (e) {
+                console.error("Failed to parse zone data for athlete. Using defaults.", e);
+                currentAthlete = {
+                    ...athleteData,
+                    lt2Zones: JSON.parse(JSON.stringify(DEFAULT_LT2_ZONES))
+                };
+            }
+            
             document.getElementById('athleteId').value = athleteData.id;
             document.getElementById('athleteName').value = athleteData.name;
             
@@ -393,15 +524,12 @@
             document.getElementById('ltPaceMin').value = ltMin;
             document.getElementById('ltPaceSec').value = ltSec;
             
-            const [mpMin, mpSec] = secondsToPace(athleteData.marathonPaceInSeconds);
-            document.getElementById('mpPaceMin').value = mpMin;
-            document.getElementById('mpPaceSec').value = mpSec;
-
             document.getElementById('weeklyMileage').value = athleteData.weeklyMileage;
             
             validateForm();
-            calculateAndDisplay(athleteData);
+            calculateAndDisplay(currentAthlete);
             updateSelectedAthleteHighlight();
+            document.getElementById('settingsBtn').style.display = 'block';
         }
         
         function clearForm() {
@@ -409,23 +537,27 @@
             document.getElementById('athleteId').value = '';
             validateForm();
             clearMainView();
+            document.getElementById('settingsBtn').style.display = 'none';
+
         }
         
         function clearMainView() {
-             document.getElementById('toolsetContainer').classList.add('hidden');
-             document.getElementById('welcomeMessage').classList.remove('hidden');
-             currentAthlete = null;
-             updateSelectedAthleteHighlight();
+              document.getElementById('toolsetContainer').classList.add('hidden');
+              document.getElementById('welcomeMessage').classList.remove('hidden');
+              currentAthlete = null;
+              updateSelectedAthleteHighlight();
+              document.getElementById('settingsBtn').style.display = 'none';
+
         }
 
         function updateSelectedAthleteHighlight() {
-             document.querySelectorAll('.athlete-list-item').forEach(item => {
-                 if (currentAthlete && item.dataset.id === currentAthlete.id) {
-                     item.classList.add('selected');
-                 } else {
-                     item.classList.remove('selected');
-                 }
-            });
+              document.querySelectorAll('.athlete-list-item').forEach(item => {
+                  if (currentAthlete && item.dataset.id === currentAthlete.id) {
+                      item.classList.add('selected');
+                  } else {
+                      item.classList.remove('selected');
+                  }
+              });
         }
 
         function calculateAndDisplay(athleteData) {
@@ -434,120 +566,133 @@
             document.getElementById('welcomeMessage').classList.add('hidden');
             document.getElementById('selectedAthleteName').textContent = currentAthlete.name;
             
+            const infoContainer = document.getElementById('selectedAthleteInfo');
             let paceInfo = [];
             if (athleteData.ltPaceInSeconds) paceInfo.push(`LT2 Pace: ${secondsToPaceString(athleteData.ltPaceInSeconds)}/km`);
-            if (athleteData.marathonPaceInSeconds) paceInfo.push(`Marathon Pace: ${secondsToPaceString(athleteData.marathonPaceInSeconds)}/km`);
-            document.getElementById('selectedAthleteInfo').innerHTML = `${paceInfo.join(' &nbsp;|&nbsp; ')} <br> Weekly Mileage: ${currentAthlete.weeklyMileage} km`;
+            
+            const paceHtml = paceInfo.map(p => `<span>${p}</span>`).join('<span class="mx-2">|</span>');
+            
+            infoContainer.innerHTML = `
+                <div class="flex flex-wrap justify-center items-center gap-x-2">${paceHtml}</div>
+                <span class="mt-2">Weekly Mileage: ${currentAthlete.weeklyMileage} km</span>
+            `;
             
             switchTab('dashboard');
         }
 
         function switchTab(tabId) {
-            if (!currentAthlete) return;
-            document.querySelectorAll('.sidebar-button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`tab-${tabId}`).classList.add('active');
+            if (!currentAthlete && tabId !== 'cardiac-drift') {
+                 if (tabId === 'cardiac-drift') {
+                    // Allow access to cardiac drift without an athlete selected
+                } else {
+                    return;
+                }
+            }
+            
             const tabContent = document.getElementById('tabContent');
             const template = document.getElementById(`template-${tabId}`);
+
+            if (!template) {
+                console.error(`Template not found for tabId: template-${tabId}`);
+                return;
+            }
+            
+            if (tabId === 'settings') {
+                if(!currentAthlete) {
+                    alert("Please select an athlete to view their settings.");
+                    return;
+                }
+                document.querySelectorAll('.sidebar-button').forEach(btn => btn.classList.remove('active'));
+            } else {
+                document.querySelectorAll('.sidebar-button').forEach(btn => btn.classList.remove('active'));
+                const activeBtn = document.getElementById(`tab-${tabId}`);
+                if (activeBtn) {
+                    activeBtn.classList.add('active');
+                }
+            }
+            
             tabContent.innerHTML = template.innerHTML; 
             
             if (tabId === 'dashboard') renderDashboard();
             else if (tabId === 'zones') renderPaceZones();
             else if (tabId === 'runAI') renderRunAI();
             else if (tabId === 'mileage') renderMileage();
+            else if (tabId === 'settings') renderSettings();
+            else if (tabId === 'cardiac-drift') renderCardiacDrift();
         }
         
         // --- EVENT LISTENERS ---
         document.addEventListener('DOMContentLoaded', () => {
-            const prefilledUrl = "https://script.google.com/macros/s/AKfycbwKgTvmAESGOoHrSFiPCHeTjdW-7W4CHFpmPLu6-vO_L6ScpdO31gCRMKNird1dQQNW3g/exec";
-            document.getElementById('apiUrl').value = prefilledUrl;
-            setApiUrl();
+            API_URL = "https://script.google.com/macros/s/AKfycbxi2O1Q_gDy4MnSCCABkot2tEo_Vk86YZdIzHhxTRkm7Q6jsSGpaWgR2nzH1autdXX8hg/exec";
             
-            document.getElementById('apiUrlContainer').style.display = 'none';
+            document.getElementById('clearFormBtn').disabled = false;
+            fetchAllAthletes();
+            validateForm();
+            clearMainView();
 
             document.getElementById('confirmBtn').addEventListener('click', () => {
-                if (confirmCallback) {
-                    confirmCallback();
-                }
+                if (confirmCallback) { confirmCallback(); }
                 hideConfirmationModal();
             });
             document.getElementById('cancelBtn').addEventListener('click', hideConfirmationModal);
             
             document.getElementById('athleteForm').addEventListener('input', validateForm);
+            document.getElementById('settingsBtn').addEventListener('click', () => switchTab('settings'));
+            document.getElementById('toggleAthletesBtn').addEventListener('click', (e) => {
+                 const container = document.getElementById('athleteListContainer');
+                 const isHidden = container.classList.contains('hidden');
+                 container.classList.toggle('hidden');
+                 e.target.textContent = isHidden ? 'Hide Athletes' : 'Show Athletes';
+            });
+             document.querySelectorAll('.sidebar-button').forEach(btn => btn.onclick = e => switchTab(e.currentTarget.id.substring(4)));
         });
-
-        document.getElementById('saveApiUrlBtn').addEventListener('click', setApiUrl);
-
-        function setApiUrl() {
-            const urlInput = document.getElementById('apiUrl');
-            const url = urlInput.value.trim();
-            const statusEl = document.getElementById('apiUrlStatus');
-            if (url && url.startsWith('https://script.google.com/macros/s/')) {
-                API_URL = url;
-                localStorage.setItem('coachApiUrl', url);
-                statusEl.textContent = 'API URL set successfully. Ready to fetch data.';
-                statusEl.style.color = 'var(--md-sys-color-success)';
-                document.getElementById('clearFormBtn').disabled = false;
-                validateForm();
-                fetchAllAthletes();
-            } else {
-                API_URL = '';
-                localStorage.removeItem('coachApiUrl');
-                statusEl.textContent = 'Invalid or missing Apps Script URL.';
-                statusEl.style.color = 'var(--md-sys-color-error)';
-                document.getElementById('saveAthleteBtn').disabled = true;
-                document.getElementById('clearFormBtn').disabled = true;
-            }
-        }
         
         function validateForm() {
             const name = document.getElementById('athleteName').value.trim();
             const mileage = parseFloat(document.getElementById('weeklyMileage').value);
             const ltPace = paceStringToSeconds(document.getElementById('ltPaceMin').value, document.getElementById('ltPaceSec').value);
-            const mpPace = paceStringToSeconds(document.getElementById('mpPaceMin').value, document.getElementById('mpPaceSec').value);
-            const errorEl = document.getElementById('formError');
 
             let isValid = true;
             let errorMessage = '';
 
-            if (!name || mileage <= 0) {
+            if (!name || isNaN(mileage) || mileage <= 0) {
                 isValid = false;
             }
-            if (ltPace <= 0 && mpPace <= 0) {
-                isValid = false;
-                errorMessage = 'Please enter at least one pace (LT2 or Marathon).';
+            if (ltPace <= 0) {
+                 isValid = false;
+                 errorMessage = 'Please enter at least an LT2 pace.';
             }
 
             document.getElementById('saveAthleteBtn').disabled = !isValid;
-            errorEl.textContent = errorMessage;
+            document.getElementById('formError').textContent = errorMessage;
         }
 
         document.getElementById('athleteForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const isUpdate = !!document.getElementById('athleteId').value;
             const athleteData = {
                 id: document.getElementById('athleteId').value || null,
                 name: document.getElementById('athleteName').value.trim(),
                 ltPaceInSeconds: paceStringToSeconds(document.getElementById('ltPaceMin').value, document.getElementById('ltPaceSec').value),
-                marathonPaceInSeconds: paceStringToSeconds(document.getElementById('mpPaceMin').value, document.getElementById('mpPaceSec').value),
-                weeklyMileage: parseFloat(document.getElementById('weeklyMileage').value)
+                weeklyMileage: parseFloat(document.getElementById('weeklyMileage').value),
+                lt2Zones: currentAthlete ? currentAthlete.lt2Zones : JSON.parse(JSON.stringify(DEFAULT_LT2_ZONES)),
             };
             
-            validateForm(); // Re-validate before submission
             if(document.getElementById('saveAthleteBtn').disabled) return;
 
             const success = await saveAthlete(athleteData);
             if (success) {
-                 // if it was an update, re-select to show new data
-                if(athleteData.id) {
-                    const updatedAthlete = { ...currentAthlete, ...athleteData };
-                    selectAthlete(updatedAthlete);
-                } else { // if it was new, clear form
-                    clearForm();
-                }
+                 if(isUpdate) {
+                    const result = await fetchAllAthletes(); 
+                    const updatedAthlete = result.data.find(a => a.id === athleteData.id);
+                    selectAthlete(updatedAthlete || athleteData);
+                 } else { 
+                     clearForm();
+                 }
             }
         });
 
         document.getElementById('clearFormBtn').addEventListener('click', clearForm);
-        document.querySelectorAll('.sidebar-button').forEach(btn => btn.onclick = e => switchTab(e.currentTarget.id.split('-')[1]));
 
         // --- UTILS & CALCULATIONS ---
         const secondsToPaceString = s => s > 0 ? `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}` : "N/A";
@@ -578,43 +723,15 @@
         }
         
         function renderPaceZones() {
-            const subtabLt2 = document.getElementById('zone-subtab-lt2');
-            const subtabMp = document.getElementById('zone-subtab-mp');
-            const contentLt2 = document.getElementById('zones-lt2-content');
-            const contentMp = document.getElementById('zones-mp-content');
-
-            subtabLt2.disabled = !currentAthlete.ltPaceInSeconds;
-            subtabMp.disabled = !currentAthlete.marathonPaceInSeconds;
-
-            const switchZoneTab = (type) => {
-                if (type === 'lt2') {
-                    subtabLt2.classList.add('active');
-                    subtabMp.classList.remove('active');
-                    contentLt2.classList.remove('hidden');
-                    contentMp.classList.add('hidden');
-                } else { // mp
-                    subtabMp.classList.add('active');
-                    subtabLt2.classList.remove('active');
-                    contentMp.classList.remove('hidden');
-                    contentLt2.classList.add('hidden');
-                }
-            };
+            const content = document.getElementById('content-zones');
+            const hasLt2Pace = currentAthlete && currentAthlete.ltPaceInSeconds > 0;
             
-            subtabLt2.addEventListener('click', () => switchZoneTab('lt2'));
-            subtabMp.addEventListener('click', () => switchZoneTab('mp'));
-
-            if (currentAthlete.ltPaceInSeconds) {
+            if (hasLt2Pace) {
+                content.style.display = 'block';
                 document.getElementById('zoneLtPace').textContent = secondsToPaceString(currentAthlete.ltPaceInSeconds) + '/km';
-                document.getElementById('zonesTableContainerLT2').innerHTML = renderZoneTable(calculateLtPaceZones(currentAthlete.ltPaceInSeconds));
-                switchZoneTab('lt2');
-            } else if (currentAthlete.marathonPaceInSeconds) {
-                switchZoneTab('mp');
-            }
-
-            if (currentAthlete.marathonPaceInSeconds) {
-                document.getElementById('zoneMpPace').textContent = secondsToPaceString(currentAthlete.marathonPaceInSeconds) + '/km';
-                 document.getElementById('zonesTableContainerMP').innerHTML = renderZoneTable(calculateMarathonPaceZones(currentAthlete.marathonPaceInSeconds));
-                 if(!currentAthlete.ltPaceInSeconds) switchZoneTab('mp');
+                document.getElementById('zonesTableContainerLT2').innerHTML = renderZoneTable(calculateLtPaceZones(currentAthlete.ltPaceInSeconds, currentAthlete.lt2Zones));
+            } else {
+                 content.innerHTML = `<p class="text-center text-gray-400">No LT2 pace set for this athlete. Please add one in the Athlete ID card.</p>`;
             }
         }
         
@@ -628,7 +745,6 @@
                     <td class="font-mono text-xl font-semibold text-right" style="color:var(--md-sys-color-on-surface);">${z.pace}</td>
                 </tr>`).join('')}</tbody></table>`;
         }
-
 
         function renderRunAI() {
             const qualityKm = calculateMileageDistribution(currentAthlete.weeklyMileage).quality;
@@ -644,20 +760,26 @@
         }
         
         function renderMileage() {
-            const subTabButtons = document.querySelectorAll('.sub-tab-button');
+            const subTabButtons = document.querySelectorAll('#content-mileage .sub-tab-button');
             subTabButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     subTabButtons.forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
-                    document.querySelectorAll('.sub-tab-content').forEach(content => content.classList.add('hidden'));
+                    document.querySelectorAll('#content-mileage .sub-tab-content').forEach(content => content.classList.add('hidden'));
                     document.getElementById(button.dataset.subtab).classList.remove('hidden');
                 });
             });
 
+            // --- Multi-week plan setup
+            const buildRateSlider = document.getElementById('planBuildRate');
+            const buildRateValue = document.getElementById('planBuildRateValue');
+            buildRateSlider.oninput = e => { buildRateValue.textContent = `${e.target.value}%`; };
+
             document.getElementById('generatePlanBtn').onclick = () => {
                 const totalWeeks = parseInt(document.getElementById('planWeeks').value);
                 const structure = document.querySelector('input[name="planStructure"]:checked').value;
-                const plan = calculateMultiWeekPlan(currentAthlete.weeklyMileage, totalWeeks, structure);
+                const buildPercent = parseInt(buildRateSlider.value);
+                const plan = calculateMultiWeekPlan(currentAthlete.weeklyMileage, totalWeeks, structure, buildPercent);
                 const container = document.getElementById('planResultContainer');
                 container.innerHTML = `<h4 class="text-lg font-medium my-3" style="color: var(--md-sys-color-on-primary-container);">Generated Mileage Plan</h4>
                     <div class="overflow-auto rounded-2xl m3-surface-container-high"><table class="min-w-full"><thead><tr>
@@ -667,6 +789,7 @@
                     <td class="p-3 font-medium">${week.week}</td><td class="p-3 font-semibold ${week.type === 'down' ? 'text-green-400' : ''}">${week.mileage}</td></tr>`).join('')}</tbody></table></div>`;
             };
 
+            // --- Single-week adjust setup
             const initialMileage = currentAthlete.weeklyMileage;
             document.getElementById('currentWeeklyKm').textContent = initialMileage;
             const slider = document.getElementById('mileageAdjust');
@@ -679,33 +802,260 @@
             slider.oninput = e => updateWeeklyUI(initialMileage, e.target.value);
         }
 
-        const calculateLtPaceZones = ltPace => [ { name: 'Z1', intensity: 'Recovery', percent: '60-74%', low: 60, high: 74, color: '#6da2ff' }, { name: 'Z2', intensity: 'Aerobic', percent: '75-87%', low: 75, high: 87, color: '#4db6ac' }, { name: 'Z3', intensity: 'Tempo', percent: '88-100%', low: 88, high: 100, color: '#ffd54f' }, { name: 'Z4', intensity: 'Threshold', percent: '101-115%', low: 101, high: 115, color: '#ff8a65' }, { name: 'Z5', intensity: 'Anaerobic', percent: '116-180%', low: 116, high: 180, color: '#f06292' } ].map(z => ({...z, pace: `${secondsToPaceString(ltPace / (z.high / 100))} - ${secondsToPaceString(ltPace / (z.low / 100))}`}));
+        function renderSettings() {
+            const lt2Container = document.getElementById('lt2-zone-settings');
+            lt2Container.innerHTML = ' <h4 class="text-lg font-medium" style="color: var(--md-sys-color-on-primary-container);">LT2 Zone Percentages (% of LT2 Pace)</h4>';
+            currentAthlete.lt2Zones.forEach((zone, index) => {
+                lt2Container.innerHTML += createZoneInputRow(zone, index, 'lt2');
+            });
+            lt2Container.style.display = currentAthlete.ltPaceInSeconds > 0 ? 'block' : 'none';
+
+            document.getElementById('saveZoneSettingsBtn').onclick = saveZoneSettings;
+            document.getElementById('resetZoneSettingsBtn').onclick = resetZoneSettings;
+        }
         
-        // NEW: Marathon Pace Zone Calculation
-        const calculateMarathonPaceZones = mpSeconds => {
-             const zones = [
-                { name: 'Zone 5', intensity: 'Intervals', percent: '87% - 92%', lowP: 0.87, highP: 0.92, color: '#f06292' },
-                { name: 'Zone 4', intensity: 'Tempo', percent: '95% - 98%', lowP: 0.95, highP: 0.98, color: '#ff8a65' },
-                { name: 'Zone 3', intensity: 'Marathon Pace', percent: '100%', lowP: 1.00, highP: 1.00, color: '#ffd54f' },
-                { name: 'Zone 2', intensity: 'Easy/Long', percent: '110% - 120%', lowP: 1.10, highP: 1.20, color: '#4db6ac' },
-                { name: 'Zone 1', intensity: 'Recovery', percent: '120% - 135%+', lowP: 1.20, highP: 1.35, color: '#6da2ff' }
-            ];
+        function createZoneInputRow(zone, index, type) {
+            const idPrefix = `${type}-zone-${index}`;
+            const value1 = zone.low;
+            const value2 = zone.high;
 
-            return zones.map(z => {
-                let paceString;
-                if (z.lowP === z.highP) {
-                    paceString = secondsToPaceString(mpSeconds * z.lowP);
-                } else {
-                    const fasterPace = secondsToPaceString(mpSeconds * z.lowP);
-                    const slowerPace = secondsToPaceString(mpSeconds * z.highP);
-                    paceString = `${fasterPace} - ${slowerPace}`;
+            return `<div class="grid grid-cols-3 items-center gap-2 p-2 rounded-lg">
+                <label for="${idPrefix}-low" class="font-medium col-span-1">${zone.name}</label>
+                <div class="col-span-2 grid grid-cols-2 gap-2">
+                    <input type="number" id="${idPrefix}-low" data-index="${index}" data-type="${type}" data-field="low" value="${value1}" class="m3-input w-full rounded-lg p-2 text-base text-center">
+                    <input type="number" id="${idPrefix}-high" data-index="${index}" data-type="${type}" data-field="high" value="${value2}" class="m3-input w-full rounded-lg p-2 text-base text-center">
+                </div>
+            </div>`;
+        }
+
+        async function saveZoneSettings() {
+            let hasChanged = false;
+            currentAthlete.lt2Zones.forEach((zone, index) => {
+                const lowInput = document.getElementById(`lt2-zone-${index}-low`);
+                const highInput = document.getElementById(`lt2-zone-${index}-high`);
+                let newLow = parseFloat(lowInput.value);
+                let newHigh = parseFloat(highInput.value);
+                
+                if (zone.low !== newLow || zone.high !== newHigh) {
+                     hasChanged = true;
+                     zone.low = newLow;
+                     zone.high = newHigh;
+                     zone.percent = `${newLow}% - ${newHigh}%`;
                 }
-                return {...z, pace: paceString};
-            }).reverse(); // Reverse to show Z1 to Z5
-        };
+            });
+            
+            if (hasChanged) {
+                const success = await saveAthlete(currentAthlete);
+                if (success) {
+                    alert('Custom zone settings saved!');
+                    selectAthlete(currentAthlete);
+                } else {
+                     alert('Failed to save settings.');
+                }
+            } else {
+                 alert('No changes to save.');
+            }
+        }
+        
+        function resetZoneSettings() {
+             showConfirmationModal("Are you sure you want to reset all zones to their default values?", () => {
+                currentAthlete.lt2Zones = JSON.parse(JSON.stringify(DEFAULT_LT2_ZONES));
+                renderSettings(); 
+                alert('Zones reset. Click "Save Custom Zones" to make it permanent.');
+            });
+        }
+        
+        function renderDriftSummary(containerId, drift) {
+            lastDriftValue = drift;
+            const summaryEl = document.getElementById(containerId);
+            const driftText = `<h3 class="text-xl font-bold mb-2 ${drift < 5 ? 'text-green-400' : 'text-red-400'}">Pa:Hr Drift: ${drift.toFixed(2)}%</h3>
+            <p class="text-sm">A drift under 5% is generally considered good.</p>`;
+            
+            const saveButton = `<button id="saveDriftBtn" class="m3-button-filled mt-4 w-full font-bold py-2 rounded-full text-md">Save Drift Result</button>`;
 
+            summaryEl.innerHTML = driftText + saveButton;
+            document.getElementById('saveDriftBtn').addEventListener('click', saveDriftResult);
+        }
+
+        // --- Cardiac Drift Section ---
+        function renderCardiacDrift() {
+             const subTabButtons = document.querySelectorAll('#content-cardiac-drift .sub-tab-button');
+             subTabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    subTabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    document.querySelectorAll('#content-cardiac-drift .sub-tab-content').forEach(content => content.classList.add('hidden'));
+                    document.getElementById(button.dataset.subtab).classList.remove('hidden');
+                });
+            });
+
+            document.getElementById('tcxInput').addEventListener('change', handleTcxFile);
+            document.getElementById('calculateDriftManualBtn').addEventListener('click', handleManualDrift);
+        }
+
+        function handleManualDrift() {
+            const hrStart = parseFloat(document.getElementById('manual_hr_start').value);
+            const paceMinStart = parseFloat(document.getElementById('manual_pace_min_start').value);
+            const paceSecStart = parseFloat(document.getElementById('manual_pace_sec_start').value);
+            const hrEnd = parseFloat(document.getElementById('manual_hr_end').value);
+            const paceMinEnd = parseFloat(document.getElementById('manual_pace_min_end').value);
+            const paceSecEnd = parseFloat(document.getElementById('manual_pace_sec_end').value);
+
+            if (isNaN(hrStart) || isNaN(paceMinStart) || isNaN(hrEnd) || isNaN(paceMinEnd)) {
+                alert("Please fill all manual input fields with valid numbers.");
+                return;
+            }
+
+            const paceStart = (paceMinStart * 60 + (paceSecStart || 0)) / 3600; 
+            const paceEnd = (paceMinEnd * 60 + (paceSecEnd || 0)) / 3600;
+
+            const speedStart = paceStart > 0 ? 1 / paceStart : 0;
+            const speedEnd = paceEnd > 0 ? 1 / paceEnd : 0; 
+
+            const paHrRatioStart = speedStart / hrStart;
+            const paHrRatioEnd = speedEnd / hrEnd;
+
+            const drift = (paHrRatioStart && paHrRatioEnd) ? ((paHrRatioStart / paHrRatioEnd - 1) * 100) : 0;
+            renderDriftSummary('drift-summary-manual', drift);
+        }
+
+        function handleTcxFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('drift-filename-display').textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const tcxContent = e.target.result;
+                const trackpoints = parseTCX(tcxContent);
+                if (trackpoints.length > 0) {
+                    plotDriftData(trackpoints);
+                    updateDriftSummary(trackpoints);
+                } else {
+                    alert("Could not find any trackpoints in the TCX file.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function parseTCX(tcxString) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(tcxString, "text/xml");
+            const trackpointNodes = xmlDoc.getElementsByTagName("Trackpoint");
+            const data = [];
+            for (let i = 0; i < trackpointNodes.length; i++) {
+                const timeNode = trackpointNodes[i].getElementsByTagName("Time")[0];
+                const hrNode = trackpointNodes[i].getElementsByTagName("HeartRateBpm")[0];
+                const distNode = trackpointNodes[i].getElementsByTagName("DistanceMeters")[0];
+                if (timeNode && hrNode && distNode) {
+                    data.push({
+                        time: new Date(timeNode.textContent),
+                        hr: parseInt(hrNode.getElementsByTagName("Value")[0].textContent, 10),
+                        distance: parseFloat(distNode.textContent)
+                    });
+                }
+            }
+            return data;
+        }
+
+        function plotDriftData(trackpoints) {
+            const time = trackpoints.map(d => d.time);
+            const hr = trackpoints.map(d => d.hr);
+
+            const speed = [];
+            for (let i = 1; i < trackpoints.length; i++) {
+                const dist = trackpoints[i].distance - trackpoints[i-1].distance; 
+                const timeDiff = (trackpoints[i].time - trackpoints[i-1].time) / 1000;
+                if (timeDiff > 0) {
+                     const speedKph = (dist / timeDiff) * 3.6; 
+                     speed.push(speedKph);
+                } else {
+                     speed.push(0);
+                }
+            }
+            speed.unshift(speed[0] || 0); 
+
+            const hrTrace = { x: time, y: hr, name: 'Heart Rate (bpm)', type: 'scatter', yaxis: 'y1', line: {color: 'var(--md-sys-color-tertiary)'} };
+            const speedTrace = { x: time, y: speed, name: 'Speed (km/h)', type: 'scatter', yaxis: 'y2', line: {color: 'var(--md-sys-color-primary)'} };
+            
+            const layout = {
+                xaxis: { title: 'Time' },
+                yaxis: { title: 'Heart Rate (bpm)', titlefont: {color: 'var(--md-sys-color-tertiary)'}, tickfont: {color: 'var(--md-sys-color-tertiary)'} },
+                yaxis2: { title: 'Speed (km/h)', titlefont: {color: 'var(--md-sys-color-primary)'}, tickfont: {color: 'var(--md-sys-color-primary)'}, overlaying: 'y', side: 'right' },
+                showlegend: true,
+                legend: { x: 0.1, y: 1.1, orientation: 'h' },
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent',
+                font: { color: 'var(--md-sys-color-on-background)'},
+                margin: { l: 50, r: 50, b: 50, t: 20, pad: 4 }
+            };
+
+            Plotly.newPlot('drift-viz', [hrTrace, speedTrace], layout, {responsive: true});
+
+            document.getElementById('drift-viz').on('plotly_relayout', (eventdata) => {
+                const start = eventdata['xaxis.range[0]'] ? new Date(eventdata['xaxis.range[0]']) : time[0];
+                const end = eventdata['xaxis.range[1]'] ? new Date(eventdata['xaxis.range[1]']) : time[time.length-1];
+                const filteredData = trackpoints.filter(d => d.time >= start && d.time <= end);
+                updateDriftSummary(filteredData);
+            });
+        }
+
+        function updateDriftSummary(data) {
+             if (data.length < 2) {
+                document.getElementById('drift-summary-file').innerHTML = "<p>Not enough data in the selected range to calculate drift.</p>";
+                return;
+            }
+
+            const midIndex = Math.floor(data.length / 2);
+            const firstHalf = data.slice(0, midIndex);
+            const secondHalf = data.slice(midIndex);
+
+            const calcAvg = (arr, key) => arr.reduce((acc, curr) => acc + curr[key], 0) / arr.length;
+
+            const avgHr1 = calcAvg(firstHalf, 'hr');
+            const avgHr2 = calcAvg(secondHalf, 'hr');
+
+            const dist1 = firstHalf[firstHalf.length - 1].distance - firstHalf[0].distance;
+            const time1 = (firstHalf[firstHalf.length - 1].time - firstHalf[0].time) / 1000;
+            const speed1 = time1 > 0 ? (dist1/time1) * 3.6 : 0;
+
+            const dist2 = secondHalf[secondHalf.length - 1].distance - secondHalf[0].distance;
+            const time2 = (secondHalf[secondHalf.length - 1].time - secondHalf[0].time) / 1000;
+            const speed2 = time2 > 0 ? (dist2/time2) * 3.6 : 0;
+
+            const paHr1 = speed1 > 0 ? speed1 / avgHr1 : 0;
+            const paHr2 = speed2 > 0 ? speed2 / avgHr2 : 0;
+
+            const drift = paHr1 > 0 && paHr2 > 0 ? ((paHr1 / paHr2 - 1) * 100) : 0;
+            
+            renderDriftSummary('drift-summary-file', drift);
+        }
+
+        // --- CALCULATION FUNCTIONS ---
+        const calculateLtPaceZones = (ltPace, zones) => (zones || DEFAULT_LT2_ZONES).map(z => ({...z, pace: `${secondsToPaceString(ltPace / (z.high / 100))} - ${secondsToPaceString(ltPace / (z.low / 100))}`}));
+        
         const calculateMileageDistribution = total => { const long = Math.round(total * 0.28); const quality = Math.round(total * 0.21); return { longRun: long, quality, easy: total - long - quality }; };
-        function calculateMultiWeekPlan(startMileage, totalWeeks, structure) { const plan = []; let currentMileage = startMileage; const cycleLength = parseInt(structure.split('/')[0]) + 1; for (let i = 1; i <= totalWeeks; i++) { if (i % cycleLength === 0) { currentMileage = Math.round((plan[plan.length-1]?.mileage || startMileage) * 0.8); plan.push({ week: i, mileage: currentMileage, type: 'down' }); } else { if (i > 1 && plan[plan.length-1]?.type === 'down') currentMileage = Math.round(plan[plan.length-2].mileage * 1.10); else currentMileage = (i === 1) ? startMileage : Math.round(currentMileage * 1.10); plan.push({ week: i, mileage: currentMileage, type: 'up' }); } } return plan; }
+        function calculateMultiWeekPlan(startMileage, totalWeeks, structure, buildPercent) {
+            const plan = [];
+            let currentMileage = startMileage;
+            const buildRate = 1 + (buildPercent / 100);
+            const cycleLength = parseInt(structure.split('/')[0]) + 1;
+            for (let i = 1; i <= totalWeeks; i++) {
+                if (i > 1 && i % cycleLength === 0) {
+                    currentMileage = Math.round((plan[plan.length-1]?.mileage || startMileage) * 0.8);
+                    plan.push({ week: i, mileage: currentMileage, type: 'down' });
+                } else {
+                    if (i > 1 && plan[plan.length-1]?.type === 'down') {
+                         currentMileage = Math.round(plan[plan.length-2].mileage * buildRate);
+                    }
+                    else {
+                        currentMileage = (i === 1) ? startMileage : Math.round(currentMileage * buildRate);
+                    }
+                    plan.push({ week: i, mileage: currentMileage, type: 'up' });
+                }
+            }
+            return plan;
+        }
         function generateWorkoutSuggestions(qualityKm) { const tempoKm = Math.round(qualityKm * 0.75); const intervalKm = qualityKm - tempoKm; let tempoSuggestions = [], intervalSuggestions = []; if (tempoKm >= 3) tempoSuggestions.push(`<b>Continuous:</b> ${tempoKm}km @ Z3 pace.`); if (tempoKm >= 4) { const r = Math.floor(tempoKm / 2); if (r >= 2) tempoSuggestions.push(`<b>Intervals:</b> 2 x ${r}km @ low Z4, 3' rest.`); } if (tempoKm >= 6) { const r = Math.floor(tempoKm / 3); if (r >= 2) tempoSuggestions.push(`<b>Intervals:</b> 3 x ${r}km @ low Z4, 3-4' rest.`); } if (!tempoSuggestions.length) tempoSuggestions.push("Not enough mileage for standard tempo."); if (intervalKm >= 1.6) intervalSuggestions.push(`<b>Short:</b> ${Math.floor(intervalKm / 0.4)}x400m @ high Z4, 1:1 rest.`); if (intervalKm >= 2.4) intervalSuggestions.push(`<b>Medium:</b> ${Math.floor(intervalKm / 0.8)}x800m @ Z4, 2' rest.`); if (intervalKm >= 3.0) intervalSuggestions.push(`<b>Long:</b> ${Math.floor(intervalKm / 1.0)}x1k @ Z4, 2-3' rest.`); if (!intervalSuggestions.length) intervalSuggestions.push("Not enough mileage for standard intervals."); return { tempo: tempoSuggestions, intervals: intervalSuggestions, tempoKm, intervalKm }; }
     
     </script>
