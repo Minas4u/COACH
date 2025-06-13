@@ -39,7 +39,12 @@
         .m3-input { background-color: var(--md-sys-color-surface-container-high); border: 1px solid var(--md-sys-color-outline-variant); color: var(--md-sys-color-on-background); }
         .m3-input:focus { border-color: var(--md-sys-color-primary); outline: none; box-shadow: 0 0 0 2px var(--md-sys-color-primary); }
         #logo { font-family: 'Teko', sans-serif; letter-spacing: 0.1em; }
-        .sidebar-button { display: flex; align-items: center; width: 100%; padding: 0.75rem 1.5rem; border-radius: 999px; font-weight: 500; color: var(--md-sys-color-on-surface-variant); transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out; }
+        .sidebar-button { 
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+            border-radius: 999px;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface-variant);
+        }
         .sidebar-button:hover { background-color: var(--md-sys-color-surface-container-high); }
         .sidebar-button.active { background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); font-weight: bold; }
         .sub-tab-button.active { background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); }
@@ -115,13 +120,28 @@
                         </div>
                     </div>
                 </div>
-                 <div class="flex flex-col md:flex-row gap-8">
-                     <nav class="flex flex-row md:flex-col md:space-y-2 md:w-48 overflow-x-auto pb-2 md:pb-0">
-                         <button id="tab-dashboard" class="sidebar-button flex-shrink-0">Dashboard</button>
-                         <button id="tab-zones" class="sidebar-button flex-shrink-0">Zones</button>
-                         <button id="tab-runAI" class="sidebar-button flex-shrink-0">RunAI</button>
-                         <button id="tab-mileage" class="sidebar-button flex-shrink-0">Mileage</button>
-                         <button id="tab-cardiac-drift" class="sidebar-button flex-shrink-0">Cardiac Drift</button>
+                 <div class="flex flex-col md:flex-row gap-4 md:gap-8">
+                     <nav class="flex flex-row justify-between items-center md:flex-col md:items-stretch md:space-y-2 md:w-48 pb-2 md:pb-0">
+                         <button id="tab-dashboard" class="sidebar-button flex-shrink-0 h-14 w-14 md:w-full md:h-auto flex items-center justify-center md:justify-start md:px-6 md:py-3 transition-all duration-300">
+                            <span class="md:hidden text-[10px] font-bold tracking-tighter">DBoard</span>
+                            <span class="hidden md:inline">Dashboard</span>
+                        </button>
+                         <button id="tab-zones" class="sidebar-button flex-shrink-0 h-14 w-14 md:w-full md:h-auto flex items-center justify-center md:justify-start md:px-6 md:py-3 transition-all duration-300">
+                            <span class="md:hidden text-xs font-bold">ZN</span>
+                            <span class="hidden md:inline">Zones</span>
+                        </button>
+                         <button id="tab-runAI" class="sidebar-button flex-shrink-0 h-14 w-14 md:w-full md:h-auto flex items-center justify-center md:justify-start md:px-6 md:py-3 transition-all duration-300">
+                            <span class="md:hidden text-xs font-bold">rAI</span>
+                            <span class="hidden md:inline">RunAI</span>
+                        </button>
+                         <button id="tab-mileage" class="sidebar-button flex-shrink-0 h-14 w-14 md:w-full md:h-auto flex items-center justify-center md:justify-start md:px-6 md:py-3 transition-all duration-300">
+                            <span class="md:hidden text-xs font-bold">KM</span>
+                            <span class="hidden md:inline">Mileage</span>
+                        </button>
+                         <button id="tab-cardiac-drift" class="sidebar-button flex-shrink-0 h-14 w-14 md:w-full md:h-auto flex items-center justify-center md:justify-start md:px-6 md:py-3 transition-all duration-300">
+                            <span class="md:hidden text-[10px] font-bold tracking-tighter">CDrift</span>
+                            <span class="hidden md:inline">Cardiac Drift</span>
+                        </button>
                      </nav>
                      <main id="tabContent" class="flex-grow"></main>
                  </div>
